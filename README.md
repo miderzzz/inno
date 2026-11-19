@@ -1,0 +1,150 @@
+# psc-ingesta · Pedido Seguro Sport Champion
+
+Lectura de hojas de cálculo (.xlsx / .csv) y validación de tallas, nombres y
+dorsales para pedidos masivos de uniformes. Incluye una pantalla web de carga.
+
+## Inicio rápido en Windows
+1. Instala Node.js 20 o superior (https://nodejs.org, versión LTS).
+2. Extrae el .zip y entra a la carpeta `psc-ingesta` (la que contiene `package.json`).
+3. Haz doble clic en **INICIAR.bat**. Instala lo necesario la primera vez y abre
+   http://localhost:3000 en el navegador.
+4. En **Nuevo pedido** elige `ejemplos/pedido_colegio_sanjose.csv`: el formulario se llena solo con los
+   datos del cliente que trae el archivo. Pulsa "Validar y crear pedido".
+5. Pulsa **Aprobar y pasar a producción** y luego **Marcar como finalizado**: en cada cambio de
+   estado el cliente recibe un aviso por correo y por WhatsApp (ver más abajo).
+6. Se abre el detalle del pedido: de quién es, su estado, la curva de tallas, las prendas y los errores.
+   En **Pedidos** ves la lista de todos, con buscador. Los pedidos se guardan en `data/pedidos.json`.
+
+## Inicio rápido desde la terminal
+```bash
+npm install
+npm test                         # 35 pruebas
+npm run server                   # http://localhost:3000 (pantalla de carga)
+npm run dev                      # igual, pero se reinicia al editar código
+npm run validar -- ejemplos/pedido_con_errores.csv    # reporte en consola
+```
+Probar la API (en PowerShell usa `curl.exe`, no `curl`):
+```bash
+curl.exe -F "archivo=@ejemplos/pedido_correcto.xlsx" http://localhost:3000/api/pedidos/validar
+```
+
+## Estados del pedido y avisos (correo y WhatsApp)
+| Estado | Cuándo | Aviso al cliente |
+| --- | --- | --- |
+| **Por aprobar** | Al crear un pedido sin errores | "Recibimos tu pedido, está por aprobar..." |
+| **En producción** | Al pulsar "Aprobar y pasar a producción" | "Tu pedido ya está en producción..." |
+| **Finalizado** | Al pulsar "Marcar como finalizado" | "Tu pedido está finalizado y listo para entrega..." |
+| Borrador | El archivo tiene errores | No se avisa; no se puede avanzar |
+
+- Los estados solo avanzan de uno en uno (no se puede saltar ni devolver).
+- Cada aviso queda registrado en el pedido (fecha, número, texto y resultado: enviado, simulado, fallido o no enviado) y se puede reenviar.
+- El aviso va al WhatsApp registrado del contacto **solo si autorizó** recibirlos (casilla del formulario o línea `Autoriza WhatsApp;Sí` en el archivo).
+- Si WhatsApp falla, el cambio de estado se guarda igual y el fallo queda anotado.
+- Aún no hay inicio de sesión: cualquiera con acceso a la pantalla puede cambiar estados. Antes de publicarlo, agrega autenticación.
+
+### Avisos por correo
+
+Cada cambio de estado (por aprobar al crear el pedido, en producción, finalizado) envía un correo con el
+resumen del pedido al **Correo** del cliente, firmado como `SPORT CHAMPION` y cerrando con "A tu servicio".
+El correo no necesita autorización aparte (es un aviso del pedido que el cliente mismo registró); WhatsApp sí.
+
+Para que salgan de verdad (se envían desde `amiderosespana@gmail.com`):
+1. En tu cuenta de Google activa la **verificación en 2 pasos** y crea una **contraseña de aplicación**
+   (Cuenta de Google → Seguridad → Contraseñas de aplicaciones). Son 16 letras; la normal de Gmail no sirve.
+2. Copia `correo-config.EJEMPLO.bat` como `correo-config.bat` y pega esa contraseña en `CORREO_CLAVE`.
+3. Abre `INICIAR.bat`. La franja de arriba dirá que el correo es real.
+
+Notas:
+- La contraseña vive solo en tu `correo-config.bat`; no se guarda en los pedidos ni se muestra. No la compartas.
+- `CORREO_COPIA` manda copia oculta de cada aviso a tu correo; bórrala del archivo si no la quieres.
+- Gmail permite unos 500 correos al día desde una cuenta personal.
+- Si el cliente responde el correo, la respuesta te llega a ti (`Reply-To`).
+- Si el envío falla (clave mala, sin internet) el estado se cambia igual y el fallo queda en la tabla "Avisos al cliente", con botón para reenviar.
+- Otras variables: `CORREO_SERVIDOR` (smtp.gmail.com), `CORREO_PUERTO` (465).
+
+### Enviar WhatsApp de verdad
+Sin configuración, el sistema funciona en **modo simulación** (aviso amarillo arriba): registra los mensajes pero no salen al celular.
+Para envíos reales necesitas una cuenta de WhatsApp Business Cloud API de Meta (token y "Phone number ID").
+1. Copia `whatsapp-config.EJEMPLO.bat` como `whatsapp-config.bat` y pon tu token y tu Phone number ID.
+2. Abre `INICIAR.bat`. El aviso de arriba pasará a verde ("WhatsApp conectado").
+
+Desde la terminal (PowerShell): `$env:WHATSAPP_TOKEN="..."; $env:WHATSAPP_PHONE_ID="..."; npm run server`.
+
+Dos reglas de Meta que debes conocer:
+- Para escribirle a un cliente por iniciativa tuya hay que usar **plantillas aprobadas** por Meta. Crea tres (por aprobar, en producción, finalizado) con las variables `{{1}}` contacto, `{{2}}` código del pedido y `{{3}}` organización, y configura sus nombres con `WHATSAPP_TEMPLATE_POR_APROBAR`, `WHATSAPP_TEMPLATE_EN_PRODUCCION` y `WHATSAPP_TEMPLATE_FINALIZADO`. Sin plantillas se envía texto libre, que solo llega a números de prueba o dentro de las 24 h siguientes a un mensaje del cliente.
+- Con una cuenta de prueba, Meta solo permite escribir a los números que registres como destinatarios de prueba.
+
+## Formato del archivo (CSV o Excel)
+Arriba van los datos del cliente (etiqueta y valor), luego una fila en blanco y después la tabla:
+
+```text
+Organización;Colegio San José
+Tipo;colegio
+NIT;900.123.456-7
+Contacto;Ana Ruiz
+Correo;ana.ruiz@sanjose.edu.co
+WhatsApp;300 123 4567
+Autoriza WhatsApp;Sí
+
+Nombre;Número;Talla;Equipo
+Juan Pérez;10;M;Sub-15
+Andrés Gómez;7;L;Sub-15
+```
+
+- Obligatorios: **Organización**, **Contacto** y **Correo**. Opcionales: Tipo, NIT, WhatsApp y Autoriza WhatsApp (Sí/No). Sin autorización no se envían avisos.
+- Al elegir el archivo, el formulario se llena solo. Lo que escribas a mano en el formulario manda sobre el archivo.
+- También se entienden etiquetas como Cliente, Colegio, Club, Persona de contacto, Correo electrónico, E-mail o Celular.
+- El separador puede ser `;` (Excel en español), `,` o tabulador. Si el archivo no trae el bloque, se escriben los datos en el formulario.
+- La tabla necesita las columnas Nombre, Número (o Dorsal) y Talla. Equipo es opcional.
+
+## Ejemplos incluidos (`ejemplos/`)
+| Archivo | Para qué sirve |
+| --- | --- |
+| `plantilla_pedido.xlsx` / `.csv` | Plantilla vacía para entregar a los clientes (el Excel trae listas desplegables de tipo y talla) |
+| `pedido_correcto.xlsx` | Excel con datos del cliente y 6 prendas sin errores |
+| `pedido_colegio_sanjose.csv` | CSV con `;` y datos del cliente, sin errores |
+| `pedido_club_tigres.csv` | CSV con `,`, otras etiquetas (Cliente, Celular) y tallas escritas distinto |
+| `pedido_con_errores.xlsx` / `.csv` | Datos del cliente completos y 7 filas con errores de nombre, dorsal y talla |
+| `pedido_sin_datos_cliente.csv` | No trae datos del cliente: hay que escribirlos en el formulario |
+
+## Estructura
+| Archivo | Qué hace |
+| --- | --- |
+| `src/catalogo.ts` | Tallas válidas, alias ("Mediana" → M), reglas de nombre y dorsal, encabezados aceptados |
+| `src/normalizar.ts` | Limpieza de celdas, tallas, números y nombres |
+| `src/lector.ts` | Lee .xlsx (ExcelJS) y .csv (Papa Parse), lee el bloque del cliente, encuentra la fila de encabezados y mapea columnas |
+| `src/validador.ts` | Reglas por fila y entre filas (dorsal repetido por equipo, filas duplicadas) |
+| `src/server.ts` | Pantalla web y API de pedidos (crear, listar, consultar, cambiar estado, reenviar aviso, eliminar) |
+| `src/correo.ts` | Correo de cada estado (texto y HTML) y envío por SMTP (real o simulado) |
+| `src/whatsapp.ts` | Textos de los avisos y envío por la API de WhatsApp (real o simulado) |
+| `src/public/index.html` | Pantalla: nuevo pedido, lista y detalle |
+| `src/cliente.ts` | Validación de los datos del cliente (organización, contacto, correo, WhatsApp) |
+| `src/almacen.ts` | Guarda los pedidos, su historial de estados y los avisos en `data/pedidos.json` (en producción: PostgreSQL) |
+| `src/cli.ts` | Validación desde la terminal |
+| `schema.sql` | Esquema PostgreSQL de la plataforma |
+
+## Endpoints
+| Método y ruta | Qué hace |
+| --- | --- |
+| `POST /api/pedidos` | Crea un pedido. Solo el archivo en `archivo` es obligatorio: el cliente se toma del bloque del archivo, y los campos `organizacion`, `tipo`, `nit`, `contacto`, `email`, `whatsapp` del formulario completan o corrigen |
+| `GET /api/pedidos` | Lista de pedidos, los más recientes primero |
+| `GET /api/pedidos/:codigo` | Detalle de un pedido (con historial y avisos) |
+| `PATCH /api/pedidos/:codigo/estado` | Avanza el estado (`{"estado":"en_produccion"}`) y avisa por correo y WhatsApp |
+| `POST /api/pedidos/:codigo/avisos` | Reenvía el aviso del estado actual |
+| `GET /api/canales` | Modo de cada canal: `{"whatsapp":"simulado","correo":"real"}` |
+| `DELETE /api/pedidos/:codigo` | Elimina un pedido |
+| `POST /api/pedidos/validar` | Lee y valida el archivo sin guardar; devuelve también `datosCliente` |
+
+## Respuesta de validación
+- `200` pedido válido, `422` hay errores bloqueantes, `400` archivo ilegible.
+- `hallazgos[]`: `{ fila, campo, codigo, severidad, mensaje, valorOriginal, sugerencia }`.
+  La `fila` coincide con el número de fila que el cliente ve en Excel.
+- `prendas[]`: filas limpias, listas para cotizar.
+
+## Ajustar reglas
+Todo está en `src/catalogo.ts` (tallas, máximo de caracteres del nombre, rango de dorsales).
+
+## Problemas comunes
+- `Cannot GET /` o `npm run dev` no existe: estás usando una versión anterior; extrae el zip nuevo.
+- Para empezar con la lista vacía, borra la carpeta `data`.
+- Puerto 3000 ocupado: en PowerShell `$env:PORT=3999; npm run server`.

@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pedido Seguro · Sport Champion</title>
+<style>
+  :root { --azul: #2563eb; --borde: #e2e2e2; --gris: #666; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, sans-serif; margin: 0; color: #1c1c1c; background: #f5f6f8; }
+  header { background: #fff; border-bottom: 1px solid var(--borde); padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  header h1 { font-size: 18px; margin: 0; }
+  nav { display: flex; gap: 8px; }
+  nav button { background: none; color: #333; border: 1px solid transparent; }
+  nav button.activo { background: #eff6ff; color: var(--azul); border-color: #bfdbfe; font-weight: 600; }
+  #modo { padding: 8px 24px; font-size: 13px; }
+  #modo.simulado { background: #fef9c3; color: #854d0e; } #modo.real { background: #dcfce7; color: #166534; }
+  main { max-width: 980px; margin: 24px auto; padding: 0 16px; }
+  h2 { font-size: 18px; margin: 0 0 12px; }
+  h3 { font-size: 15px; margin: 24px 0 8px; }
+  .tarjeta { background: #fff; border: 1px solid var(--borde); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  label.check { font-weight: 500; display: flex; gap: 8px; align-items: center; margin-top: 14px; }
+  input, select { width: 100%; padding: 9px 10px; border: 1px solid #bbb; border-radius: 8px; font-size: 14px; background: #fff; }
+  input[type=checkbox] { width: auto; }
+  input.malo { border-color: #dc2626; background: #fef2f2; }
+  .msg-error { color: #b91c1c; font-size: 12px; margin-top: 3px; }
+  button { background: var(--azul); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
+  button.sec { background: #fff; color: #333; border: 1px solid #bbb; }
+  button.peligro { background: #fff; color: #b91c1c; border: 1px solid #fca5a5; }
+  button.grande { padding: 12px 22px; font-size: 15px; font-weight: 600; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .caja { border: 2px dashed #999; border-radius: 10px; padding: 22px; text-align: center; background: #fafafa; }
+  .caja.sobre { border-color: var(--azul); background: #eff6ff; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { border-bottom: 1px solid var(--borde); padding: 8px; text-align: left; vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; color: var(--gris); }
+  tr.clic { cursor: pointer; } tr.clic:hover { background: #f0f6ff; }
+  .insignia { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .por_aprobar { background: #dbeafe; color: #1e40af; } .en_produccion { background: #ffedd5; color: #9a3412; }
+  .finalizado { background: #dcfce7; color: #166534; } .borrador { background: #fee2e2; color: #991b1b; }
+  .m-enviado { background: #dcfce7; color: #166534; } .m-simulado { background: #e0e7ff; color: #3730a3; }
+  .m-fallido { background: #fee2e2; color: #991b1b; } .m-omitido { background: #fef3c7; color: #92400e; }
+  .error { color: #b91c1c; font-weight: 600; } .advertencia { color: #b45309; font-weight: 600; }
+  .resumen { padding: 12px 14px; border-radius: 8px; font-weight: 600; margin: 12px 0; }
+  .ok { background: #dcfce7; } .mal { background: #fee2e2; }
+  .datos { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 14px; }
+  .datos dt { color: var(--gris); } .datos dd { margin: 0; font-weight: 500; }
+  .barra { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .tallas span { display: inline-block; background: #eef2ff; border-radius: 6px; padding: 3px 9px; margin: 0 6px 6px 0; font-size: 13px; }
+  .vacio { text-align: center; color: var(--gris); padding: 30px; }
+  .lectura { margin-top: 10px; font-size: 14px; text-align: left; }
+  .lectura .bien { color: #166534; } .lectura .aviso { color: #92400e; }
+  input.auto { background: #f0fdf4; border-color: #86efac; }
+  small, .nota { color: var(--gris); font-size: 12px; }
+  .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; background: #e0f2fe; color: #075985; }
+  .flash.malo { background: #fee2e2; color: #991b1b; }
+  /* línea de avance */
+  .pasos { display: flex; align-items: center; margin: 18px 0 8px; }
+  .paso { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #888; white-space: nowrap; }
+  .paso .punto { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+  .paso.hecho { color: #166534; } .paso.hecho .punto { background: #16a34a; border-color: #16a34a; color: #fff; }
+  .paso.actual { color: #1c1c1c; font-weight: 700; } .paso.actual .punto { border-color: var(--azul); color: var(--azul); background: #eff6ff; }
+  .linea { flex: 1; height: 2px; background: #ddd; margin: 0 10px; min-width: 20px; }
+  .accion { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 14px 0 4px; }
+  .texto-msg { max-width: 420px; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Pedido Seguro · Sport Champion</h1>
+  <nav>
+    <button id="nav-nuevo" data-ir="#/nuevo">Nuevo pedido</button>
+    <button id="nav-lista" data-ir="#/pedidos">Pedidos <span id="contador"></span></button>
+  </nav>
+</header>
+<div id="modo"></div>
+<main id="vista"></main>
+
+<script>
+  const $vista = document.getElementById('vista');
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fecha = (iso) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short' });
+  const sinTildes = (t) => String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+  const esSi = (t) => ['si', 'yes', 'true', '1', 'x', 'ok', 'acepta', 'autoriza'].includes(sinTildes(t));
+
+  const ESTADOS = { borrador: 'Borrador (con errores)', por_aprobar: 'Por aprobar', en_produccion: 'En producción', finalizado: 'Finalizado' };
+  const PASOS = ['por_aprobar', 'en_produccion', 'finalizado'];
+  const SIGUIENTE = {
+    por_aprobar: { estado: 'en_produccion', texto: 'Aprobar y pasar a producción →' },
+    en_produccion: { estado: 'finalizado', texto: 'Marcar como finalizado →' },
+  };
+  const RESULTADO = { enviado: 'Enviado', simulado: 'Simulado', fallido: 'Fallido', omitido: 'No enviado' };
+  const etiquetaEstado = (e) => '<span class="insignia ' + esc(e) + '">' + esc(ESTADOS[e] || e) + '</span>';
+
+  let flash = null; // mensaje que se muestra una vez en la pantalla de detalle
+
+  document.querySelectorAll('nav button').forEach((b) => b.addEventListener('click', () => { location.hash = b.dataset.ir; }));
+
+  async function api(url, opciones) {
+    const r = await fetch(url, opciones);
+    const cuerpo = r.status === 204 ? null : await r.json().catch(() => ({}));
+    if (!r.ok) throw Object.assign(new Error((cuerpo && cuerpo.error) || 'Error del servidor'), { detalle: cuerpo });
+    return cuerpo;
+  }
+
+  // Aviso arriba: ¿los avisos salen de verdad o solo se simulan?
+  api('/api/canales').then((c) => {
+    const el = document.getElementById('modo');
+    const reales = [c.correo === 'real' && 'correo', c.whatsapp === 'real' && 'WhatsApp'].filter(Boolean);
+    const simulados = [c.correo !== 'real' && 'correo', c.whatsapp !== 'real' && 'WhatsApp'].filter(Boolean);
+    el.className = simulados.length ? 'simulado' : 'real';
+    el.textContent = (reales.length ? 'Avisos reales por ' + reales.join(' y ') + '. ' : '') +
+      (simulados.length ? 'En modo simulación (se registran pero no salen): ' + simulados.join(' y ') + '. Para envíos reales configura las credenciales (ver README).' : '');
+  }).catch(() => {});
+
+  // ---------- Navegación por hash, así F5 conserva la pantalla ----------
+  async function ruta() {
+    const h = location.hash || '#/pedidos';
+    document.getElementById('nav-nuevo').classList.toggle('activo', h === '#/nuevo');
+    document.getElementById('nav-lista').classList.toggle('activo', h === '#/pedidos');
+    try {
+      if (h === '#/nuevo') vistaNuevo();
+      else if (h.startsWith('#/pedido/')) await vistaDetalle(decodeURIComponent(h.slice(9)));
+      else await vistaLista();
+    } catch (e) {
+      $vista.innerHTML = '<div class="tarjeta"><p class="error">' + esc(e.message) + '</p><button class="sec" onclick="location.hash=\'#/pedidos\'">Volver a pedidos</button></div>';
+    }
+  }
+  window.addEventListener('hashchange', ruta);
+
+  // ---------- Lista de pedidos ----------
+  async function vistaLista() {
+    const pedidos = await api('/api/pedidos');
+    document.getElementById('contador').textContent = pedidos.length ? '(' + pedidos.length + ')' : '';
+    if (!pedidos.length) {
+      $vista.innerHTML = '<div class="tarjeta vacio"><p>Aún no hay pedidos.</p><button onclick="location.hash=\'#/nuevo\'">Crear el primer pedido</button></div>';
+      return;
+    }
+    const cuenta = (e) => pedidos.filter((p) => p.estado === e).length;
+    $vista.innerHTML = '<div class="barra"><h2>Pedidos</h2><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+      '<select id="filtro-estado" style="width:auto"><option value="">Todos los estados</option>' +
+      Object.keys(ESTADOS).map((e) => '<option value="' + e + '">' + esc(ESTADOS[e]) + ' (' + cuenta(e) + ')</option>').join('') + '</select>' +
+      '<input id="buscar" placeholder="Buscar por cliente o código..." style="max-width:260px"></div></div>' +
+      '<div class="tarjeta"><table><thead><tr><th>Código</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Prendas</th><th>Estado</th></tr></thead><tbody></tbody></table></div>';
+    const pintar = () => {
+      const q = document.getElementById('buscar').value.trim().toLowerCase();
+      const est = document.getElementById('filtro-estado').value;
+      const visibles = pedidos.filter((p) => (!est || p.estado === est) && (!q || (p.codigo + ' ' + p.organizacion + ' ' + p.contacto).toLowerCase().includes(q)));
+      $vista.querySelector('tbody').innerHTML = visibles.length ? visibles.map((p) =>
+        '<tr class="clic" data-codigo="' + esc(p.codigo) + '"><td><b>' + esc(p.codigo) + '</b></td><td>' + esc(p.organizacion) + '</td><td>' + esc(p.contacto) +
+        '</td><td>' + esc(fecha(p.creadoEn)) + '</td><td>' + p.prendas + (p.errores ? ' <small class="error">· ' + p.errores + ' con error</small>' : '') +
+        '</td><td>' + etiquetaEstado(p.estado) + '</td></tr>').join('') : '<tr><td colspan="6" class="vacio">Ningún pedido coincide.</td></tr>';
+    };
+    pintar();
+    document.getElementById('buscar').addEventListener('input', pintar);
+    document.getElementById('filtro-estado').addEventListener('change', pintar);
+    $vista.querySelector('tbody').addEventListener('click', (e) => {
+      const fila = e.target.closest('tr[data-codigo]');
+      if (fila) location.hash = '#/pedido/' + encodeURIComponent(fila.dataset.codigo);
+    });
+  }
+
+  // ---------- Nuevo pedido: cliente + archivo ----------
+  function campo(id, etiqueta, extra) {
+    return '<div><label for="' + id + '">' + etiqueta + '</label><input id="' + id + '" name="' + id + '" ' + (extra || '') + '><div class="msg-error" id="e-' + id + '"></div></div>';
+  }
+
+  function vistaNuevo() {
+    $vista.innerHTML = '<h2>Nuevo pedido</h2><form id="form" novalidate>' +
+      '<div class="tarjeta"><h3 style="margin-top:0">1. ¿De quién es el pedido?</h3><div class="rejilla">' +
+      campo('organizacion', 'Colegio, club o empresa *', 'autocomplete="organization" maxlength="80"') +
+      '<div><label for="tipo">Tipo</label><select id="tipo" name="tipo"><option value="colegio">Colegio</option><option value="club">Club</option><option value="liga">Liga</option><option value="empresa">Empresa</option><option value="otro">Otro</option></select><div class="msg-error" id="e-tipo"></div></div>' +
+      campo('nit', 'NIT (opcional)', 'placeholder="900.123.456-7"') +
+      campo('contacto', 'Persona de contacto *', 'autocomplete="name" maxlength="80"') +
+      campo('email', 'Correo *', 'type="email" autocomplete="email"') +
+      campo('whatsapp', 'WhatsApp (opcional)', 'type="tel" placeholder="300 123 4567"') +
+      '</div><label class="check"><input type="checkbox" id="aceptaWhatsapp"> El contacto autoriza recibir por WhatsApp los avisos del pedido (por aprobar, en producción, finalizado). Por correo siempre se avisa.</label></div>' +
+      '<div class="tarjeta"><h3 style="margin-top:0">2. Listado de uniformes</h3><div class="caja" id="caja"><p>Arrastra aquí tu archivo .xlsx o .csv, o elígelo:</p><input type="file" id="archivo" name="archivo" accept=".xlsx,.csv" style="max-width:360px"><div class="msg-error" id="e-archivo"></div><div id="lectura" class="lectura"></div>' +
+      '<p class="nota">El archivo puede traer arriba los datos del cliente (Organización, Contacto, Correo, WhatsApp, Autoriza WhatsApp...) y el formulario se llena solo. Columnas de la tabla: Nombre, Número (o Dorsal) y Talla. Máximo 5 MB.</p></div></div>' +
+      '<div id="aviso"></div><button type="submit" id="enviar">Validar y crear pedido</button></form>';
+
+    const caja = document.getElementById('caja'), archivo = document.getElementById('archivo');
+    caja.addEventListener('dragover', (e) => { e.preventDefault(); caja.classList.add('sobre'); });
+    caja.addEventListener('dragleave', () => caja.classList.remove('sobre'));
+    caja.addEventListener('drop', (e) => { e.preventDefault(); caja.classList.remove('sobre'); archivo.files = e.dataTransfer.files; leerArchivo(); });
+    archivo.addEventListener('change', leerArchivo);
+    // Si la persona toca un campo, deja de considerarse "llenado por el archivo".
+    ['organizacion', 'tipo', 'nit', 'contacto', 'email', 'whatsapp', 'aceptaWhatsapp'].forEach((id) => {
+      const el = document.getElementById(id);
+      el.addEventListener('input', () => { el.dataset.auto = '0'; el.classList.remove('auto'); });
+    });
+
+    const ETIQUETAS = { organizacion: 'organización', tipo: 'tipo', nit: 'NIT', contacto: 'contacto', email: 'correo', whatsapp: 'WhatsApp', aceptaWhatsapp: 'autorización de WhatsApp' };
+    const OBLIGATORIOS = ['organizacion', 'contacto', 'email'];
+
+    async function leerArchivo() {
+      const salida = document.getElementById('lectura');
+      document.getElementById('e-archivo').textContent = '';
+      if (!archivo.files.length) { salida.innerHTML = ''; return; }
+      salida.innerHTML = '<span class="nota">Leyendo archivo...</span>';
+      const datos = new FormData();
+      datos.append('archivo', archivo.files[0]);
+      let r;
+      try {
+        r = await api('/api/pedidos/validar', { method: 'POST', body: datos });
+      } catch (err) {
+        r = err.detalle && err.detalle.resumen ? err.detalle : null; // 422 = archivo con errores, pero legible
+        if (!r) { salida.innerHTML = '<span class="error">' + esc(err.message) + '</span>'; return; }
+      }
+      const encontrados = [];
+      Object.keys(ETIQUETAS).forEach((k) => {
+        let valor = (r.datosCliente || {})[k];
+        const el = document.getElementById(k);
+        if (!valor || !el) return;
+        // Lo escrito o elegido a mano no se pisa. El desplegable "Tipo" siempre trae un valor por defecto.
+        const tocadoAMano = el.dataset.auto === '0' || (el.tagName === 'INPUT' && el.type !== 'checkbox' && el.value.trim() && el.dataset.auto !== '1');
+        if (tocadoAMano) return;
+        if (k === 'tipo') { // "Club deportivo" -> opción "club"
+          const t = sinTildes(valor);
+          const opcion = Array.from(el.options).find((o) => t === o.value || t.startsWith(o.value));
+          if (!opcion) return;
+          valor = opcion.value;
+        }
+        if (k === 'aceptaWhatsapp') el.checked = esSi(valor); else el.value = valor;
+        el.dataset.auto = '1'; el.classList.add('auto'); el.classList.remove('malo');
+        const err = document.getElementById('e-' + k); if (err) err.textContent = '';
+        encontrados.push(ETIQUETAS[k]);
+      });
+      const faltan = OBLIGATORIOS.filter((k) => !document.getElementById(k).value.trim()).map((k) => ETIQUETAS[k]);
+      const s = r.resumen;
+      let html = '<div>' + (encontrados.length
+        ? '<span class="bien">✔ Datos del cliente leídos del archivo: <b>' + esc(encontrados.join(', ')) + '</b>.</span>'
+        : '<span class="aviso">Este archivo no trae datos del cliente: escríbelos arriba.</span>') + '</div>';
+      if (faltan.length) html += '<div class="aviso">Falta completar: <b>' + esc(faltan.join(', ')) + '</b>.</div>';
+      html += '<div class="nota">Listado: ' + s.filasTotal + ' filas · ' + s.filasValidas + ' válidas · ' + s.filasConError + ' con error · ' + s.advertencias + ' advertencias.</div>';
+      salida.innerHTML = html;
+    }
+
+    document.getElementById('form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.msg-error').forEach((n) => { n.textContent = ''; });
+      document.querySelectorAll('input.malo').forEach((n) => n.classList.remove('malo'));
+      document.getElementById('aviso').innerHTML = '';
+      if (!archivo.files.length) { document.getElementById('e-archivo').textContent = 'Elige un archivo .xlsx o .csv.'; }
+      const boton = document.getElementById('enviar');
+      boton.disabled = true; boton.textContent = 'Validando y avisando...';
+      try {
+        const datos = new FormData(e.target);
+        datos.set('aceptaWhatsapp', document.getElementById('aceptaWhatsapp').checked ? 'si' : 'no');
+        const pedido = await api('/api/pedidos', { method: 'POST', body: datos });
+        flash = flashDe(pedido, 'Pedido ' + pedido.codigo + ' creado en estado "' + ESTADOS[pedido.estado] + '".');
+        location.hash = '#/pedido/' + encodeURIComponent(pedido.codigo);
+      } catch (err) {
+        const errores = (err.detalle && err.detalle.errores) || {};
+        Object.keys(errores).forEach((k) => {
+          const m = document.getElementById('e-' + k), i = document.getElementById(k);
+          if (m) m.textContent = errores[k];
+          if (i) i.classList.add('malo');
+        });
+        document.getElementById('aviso').innerHTML = '<p class="error">' + esc(err.message) + '</p>';
+      } finally {
+        boton.disabled = false; boton.textContent = 'Validar y crear pedido';
+      }
+    });
+  }
+
+  // ---------- Detalle de un pedido ----------
+  // Resume qué pasó con los avisos (correo y WhatsApp) del cambio de estado, para mostrarlo arriba.
+  const NOMBRE_CANAL = { correo: 'Correo', whatsapp: 'WhatsApp' };
+  function flashDe(p, inicio) {
+    const partes = [];
+    let malo = false;
+    ['correo', 'whatsapp'].forEach((canal) => {
+      const m = p.mensajes.filter((x) => x.canal === canal && x.paraEstado === p.estado).pop();
+      if (!m) return;
+      const n = NOMBRE_CANAL[canal];
+      if (m.resultado === 'fallido') malo = true;
+      partes.push({
+        enviado: n + ' enviado a ' + m.para + '.',
+        simulado: n + ' simulado para ' + m.para + ' (no sale: faltan las credenciales).',
+        fallido: n + ' NO se pudo enviar: ' + (m.detalle || 'error desconocido'),
+        omitido: n + ' no enviado: ' + (m.detalle || ''),
+      }[m.resultado]);
+    });
+    return { malo, texto: [inicio].concat(partes).join(' ') };
+  }
+
+  function avisoPrevio(c) {
+    const correo = c.email ? 'correo a ' + c.email : null;
+    const wa = c.whatsapp && c.aceptaWhatsapp ? 'WhatsApp a ' + c.whatsapp : null;
+    const lista = [correo, wa].filter(Boolean);
+    let t = lista.length ? 'Se enviará ' + lista.join(' y ') + '.' : 'No se enviará ningún aviso.';
+    if (!wa) t += c.whatsapp ? ' (WhatsApp: el contacto no ha autorizado los avisos.)' : ' (WhatsApp: no hay número registrado.)';
+    return t;
+  }
+
+  function lineaAvance(estado) {
+    const idx = estado === 'finalizado' ? 3 : PASOS.indexOf(estado);
+    return '<div class="pasos">' + PASOS.map((e, i) =>
+      '<div class="paso ' + (idx < 0 ? '' : i < idx ? 'hecho' : i === idx ? 'actual' : '') + '"><span class="punto">' + (i < idx ? '✔' : i + 1) + '</span>' + esc(ESTADOS[e]) + '</div>'
+    ).join('<div class="linea"></div>') + '</div>';
+  }
+
+  async function vistaDetalle(codigo) {
+    const p = await api('/api/pedidos/' + encodeURIComponent(codigo));
+    const c = p.cliente, s = p.resumen;
+    const dato = (k, v) => '<dt>' + k + '</dt><dd>' + (v ? esc(v) : '<span class="nota">—</span>') + '</dd>';
+    const errores = p.hallazgos.filter((h) => h.severidad === 'error').length;
+    const tallas = Object.keys(s.curvaTallas);
+    const sig = SIGUIENTE[p.estado];
+
+    let html = '';
+    if (flash) { html += '<div class="flash' + (flash.malo ? ' malo' : '') + '" id="flash">' + esc(flash.texto) + '</div>'; flash = null; }
+    html += '<div class="barra"><div><button class="sec" onclick="location.hash=\'#/pedidos\'">← Pedidos</button></div>' +
+      '<button class="peligro" id="borrar">Eliminar pedido</button></div>' +
+      '<div class="tarjeta"><div class="barra" style="margin:0"><h2 style="margin:0">Pedido ' + esc(p.codigo) + '</h2>' + etiquetaEstado(p.estado) + '</div>' +
+      '<p class="nota">Creado el ' + esc(fecha(p.creadoEn)) + ' · archivo ' + esc(p.archivo.nombre) + '</p>' +
+      (p.estado === 'borrador' ? '' : lineaAvance(p.estado)) +
+      '<div class="accion">' +
+        (sig ? '<button class="grande" id="avanzar">' + esc(sig.texto) + '</button><span class="nota">' + esc(avisoPrevio(c)) + '</span>'
+          : p.estado === 'finalizado' ? '<b style="color:#166534">✔ Pedido finalizado</b>'
+          : '<span class="error">El archivo tiene errores: no se puede avanzar hasta corregirlos.</span>') +
+      '</div></div>' +
+      '<div class="tarjeta"><div class="rejilla"><div><h3 style="margin-top:0">Cliente</h3><dl class="datos">' +
+      dato('Organización', c.organizacion) + dato('Tipo', c.tipo) + dato('NIT', c.nit) + dato('Contacto', c.contacto) + dato('Correo', c.email) + dato('WhatsApp', c.whatsapp) +
+      dato('Autoriza WhatsApp', c.aceptaWhatsapp ? 'Sí' : 'No') +
+      '</dl></div><div><h3 style="margin-top:0">Resumen</h3><dl class="datos">' +
+      dato('Filas del archivo', s.filasTotal) + dato('Prendas válidas', s.filasValidas) + dato('Filas con error', s.filasConError) + dato('Advertencias', s.advertencias) +
+      '</dl></div></div>' +
+      '<div class="resumen ' + (errores ? 'mal' : 'ok') + '">' + (errores ? 'Hay ' + errores + ' error(es) por corregir en el Excel. Corrígelos y crea el pedido de nuevo.' : 'Listado sin errores') + '</div></div>';
+
+    if (p.estado !== 'borrador') {
+      html += '<div class="tarjeta"><div class="barra" style="margin-bottom:8px"><h3 style="margin:0">Avisos al cliente (' + p.mensajes.length + ')</h3>' +
+        '<button class="sec" id="reenviar">Reenviar aviso del estado actual</button></div>';
+      html += p.mensajes.length
+        ? '<table><thead><tr><th>Fecha</th><th>Canal</th><th>Por el estado</th><th>Para</th><th>Resultado</th><th>Mensaje</th></tr></thead><tbody>' +
+          p.mensajes.slice().reverse().map((m) => '<tr><td>' + esc(fecha(m.fecha)) + '</td><td>' + esc(NOMBRE_CANAL[m.canal] || m.canal) + '</td><td>' + etiquetaEstado(m.paraEstado) + '</td><td>' + esc(m.para || '—') +
+            '</td><td><span class="insignia m-' + esc(m.resultado) + '">' + esc(RESULTADO[m.resultado]) + '</span>' + (m.detalle && m.resultado !== 'enviado' ? '<br><small>' + esc(m.detalle) + '</small>' : '') +
+            '</td><td class="texto-msg">' + esc(m.texto) + '</td></tr>').join('') + '</tbody></table>'
+        : '<p class="nota">Todavía no se ha enviado ningún aviso.</p>';
+      html += '</div>';
+    }
+
+    html += '<div class="tarjeta"><h3 style="margin-top:0">Historial de estados</h3><table><thead><tr><th>Fecha</th><th>Estado</th></tr></thead><tbody>' +
+      p.historial.slice().reverse().map((h) => '<tr><td>' + esc(fecha(h.fecha)) + '</td><td>' + etiquetaEstado(h.estado) + '</td></tr>').join('') + '</tbody></table></div>';
+
+    if (tallas.length) {
+      html += '<div class="tarjeta"><h3 style="margin-top:0">Curva de tallas</h3><div class="tallas">' +
+        tallas.map((t) => '<span><b>' + esc(t) + '</b> × ' + esc(s.curvaTallas[t]) + '</span>').join('') + '</div></div>';
+    }
+    html += '<div class="tarjeta"><div class="barra" style="margin-bottom:8px"><h3 style="margin:0">Prendas (<span id="cuenta">' + p.prendas.length + '</span>)</h3>' +
+      '<input id="filtro" placeholder="Filtrar por nombre, número, talla o equipo..." style="max-width:320px"></div>' +
+      '<table><thead><tr><th>Fila Excel</th><th>Nombre a estampar</th><th>Número</th><th>Talla</th><th>Equipo</th></tr></thead><tbody id="prendas"></tbody></table></div>';
+
+    if (p.hallazgos.length) {
+      html += '<div class="tarjeta"><h3 style="margin-top:0">Errores y advertencias</h3><table><thead><tr><th>Fila</th><th>Campo</th><th>Tipo</th><th>Detalle</th><th>Sugerencia</th></tr></thead><tbody>' +
+        p.hallazgos.map((h) => '<tr><td>' + esc(h.fila || '—') + '</td><td>' + esc(h.campo) + '</td><td class="' + esc(h.severidad) + '">' + esc(h.severidad) + '</td><td>' + esc(h.mensaje) + '</td><td>' + esc(h.sugerencia) + '</td></tr>').join('') +
+        '</tbody></table></div>';
+    }
+    $vista.innerHTML = html;
+
+    const pintarPrendas = (texto) => {
+      const q = texto.trim().toLowerCase();
+      const visibles = p.prendas.filter((x) => !q || [x.nombre, x.numero, x.talla, x.equipo].join(' ').toLowerCase().includes(q));
+      document.getElementById('prendas').innerHTML = visibles.length
+        ? visibles.map((x) => '<tr><td>' + esc(x.fila) + '</td><td><b>' + esc(x.nombre) + '</b></td><td>' + esc(x.numero) + '</td><td>' + esc(x.talla) + '</td><td>' + esc(x.equipo) + '</td></tr>').join('')
+        : '<tr><td colspan="5" class="vacio">' + (p.prendas.length ? 'Ninguna prenda coincide.' : 'No hay prendas válidas todavía.') + '</td></tr>';
+      document.getElementById('cuenta').textContent = visibles.length === p.prendas.length ? p.prendas.length : visibles.length + ' de ' + p.prendas.length;
+    };
+    pintarPrendas('');
+    document.getElementById('filtro').addEventListener('input', (e) => pintarPrendas(e.target.value));
+
+    const accion = async (boton, textoCargando, hacer) => {
+      boton.disabled = true; const original = boton.textContent; boton.textContent = textoCargando;
+      try { await hacer(); } catch (err) {
+        flash = { malo: true, texto: err.message };
+        await vistaDetalle(codigo);
+        return;
+      }
+      boton.disabled = false; boton.textContent = original;
+    };
+
+    const avanzar = document.getElementById('avanzar');
+    if (avanzar) avanzar.addEventListener('click', async () => {
+      if (!confirm('¿Cambiar el pedido ' + p.codigo + ' a "' + ESTADOS[sig.estado] + '"?\n\n' + avisoPrevio(c))) return;
+      await accion(avanzar, 'Cambiando estado...', async () => {
+        const nuevo = await api('/api/pedidos/' + encodeURIComponent(p.codigo) + '/estado', {
+          method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: sig.estado }),
+        });
+        flash = flashDe(nuevo, 'Estado cambiado a "' + ESTADOS[nuevo.estado] + '".');
+        await vistaDetalle(codigo);
+      });
+    });
+
+    const reenviar = document.getElementById('reenviar');
+    if (reenviar) reenviar.addEventListener('click', () => accion(reenviar, 'Enviando...', async () => {
+      const nuevo = await api('/api/pedidos/' + encodeURIComponent(p.codigo) + '/avisos', { method: 'POST' });
+      flash = flashDe(nuevo, 'Aviso reenviado.');
+      await vistaDetalle(codigo);
+    }));
+
+    document.getElementById('borrar').addEventListener('click', async () => {
+      if (!confirm('¿Eliminar el pedido ' + p.codigo + ' de ' + c.organizacion + '? No se puede deshacer.')) return;
+      await api('/api/pedidos/' + encodeURIComponent(p.codigo), { method: 'DELETE' });
+      location.hash = '#/pedidos';
+    });
+  }
+
+  // El contador de la barra se actualiza en cada cambio de pantalla.
+  window.addEventListener('hashchange', () => api('/api/pedidos').then((l) => { document.getElementById('contador').textContent = l.length ? '(' + l.length + ')' : ''; }).catch(() => {}));
+  ruta();
+</script>
+</body>
+</html>

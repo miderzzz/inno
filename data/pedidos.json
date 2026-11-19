@@ -1,0 +1,143 @@
+{
+  "secuencia": 1,
+  "pedidos": [
+    {
+      "codigo": "PSC-2026-00001",
+      "creadoEn": "2026-11-19T23:26:39.110Z",
+      "estado": "en_produccion",
+      "historial": [
+        {
+          "estado": "por_aprobar",
+          "fecha": "2026-11-19T23:26:39.110Z"
+        },
+        {
+          "estado": "en_produccion",
+          "fecha": "2026-11-19T23:27:00.265Z"
+        }
+      ],
+      "mensajes": [
+        {
+          "id": "c0bdba5d-f98c-4569-aacf-ba2fd1b989ac",
+          "canal": "whatsapp",
+          "fecha": "2026-11-19T23:26:39.115Z",
+          "paraEstado": "por_aprobar",
+          "para": "+573117654321",
+          "texto": "Hola Luis, recibimos el pedido PSC-2026-00001 de Club Deportivo Los Tigres (4 prendas). Está *por aprobar*: revisa la cotización y la vista previa y confírmanos para pasarlo a producción. — Sport Champion",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el mensaje no sale al celular. Configura WHATSAPP_TOKEN y WHATSAPP_PHONE_ID para enviarlo de verdad."
+        },
+        {
+          "id": "ed2f6115-c382-4175-b9b6-db6d19abe5b5",
+          "canal": "correo",
+          "fecha": "2026-11-19T23:26:39.116Z",
+          "paraEstado": "por_aprobar",
+          "para": "juan_die.osorio@uao.edu.co",
+          "texto": "Asunto: Pedido PSC-2026-00001 · Por aprobar | SPORT CHAMPION\nHola Luis, recibimos el pedido PSC-2026-00001 de Club Deportivo Los Tigres con 4 prendas.",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el correo no se envía. Configura CORREO_USUARIO y CORREO_CLAVE para enviarlo de verdad."
+        },
+        {
+          "id": "781eeca0-7acf-419c-acec-e9eb91a2011d",
+          "canal": "whatsapp",
+          "fecha": "2026-11-19T23:27:00.267Z",
+          "paraEstado": "en_produccion",
+          "para": "+573117654321",
+          "texto": "Hola Luis, tu pedido PSC-2026-00001 ya está *en producción*. Te avisaremos apenas esté finalizado. — Sport Champion",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el mensaje no sale al celular. Configura WHATSAPP_TOKEN y WHATSAPP_PHONE_ID para enviarlo de verdad."
+        },
+        {
+          "id": "d43d99ea-ae1a-41db-90f1-13ec2d9570e0",
+          "canal": "correo",
+          "fecha": "2026-11-19T23:27:00.267Z",
+          "paraEstado": "en_produccion",
+          "para": "juan_die.osorio@uao.edu.co",
+          "texto": "Asunto: Pedido PSC-2026-00001 · En producción | SPORT CHAMPION\nHola Luis, tu pedido PSC-2026-00001 ya está en producción.",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el correo no se envía. Configura CORREO_USUARIO y CORREO_CLAVE para enviarlo de verdad."
+        }
+      ],
+      "cliente": {
+        "organizacion": "Club Deportivo Los Tigres",
+        "tipo": "club",
+        "nit": "800.555.321-0",
+        "contacto": "Luis Mora",
+        "email": "juan_die.osorio@uao.edu.co",
+        "whatsapp": "+573117654321",
+        "aceptaWhatsapp": true
+      },
+      "archivo": {
+        "nombre": "pedido_club_tigres.csv",
+        "filasTotal": 4
+      },
+      "mapaColumnas": {
+        "nombre": "Nombre",
+        "numero": "Número",
+        "talla": "Talla",
+        "equipo": "Equipo"
+      },
+      "resumen": {
+        "filasTotal": 4,
+        "filasValidas": 4,
+        "filasConError": 0,
+        "advertencias": 2,
+        "curvaTallas": {
+          "XXL": 1,
+          "XL": 1,
+          "L": 1,
+          "M": 1
+        }
+      },
+      "prendas": [
+        {
+          "fila": 10,
+          "nombre": "JOSE MUÑOZ",
+          "numero": 9,
+          "talla": "XXL",
+          "equipo": "MAYORES"
+        },
+        {
+          "fila": 11,
+          "nombre": "IVAN ORTIZ",
+          "numero": 11,
+          "talla": "XL",
+          "equipo": "MAYORES"
+        },
+        {
+          "fila": 12,
+          "nombre": "DIEGO SALAS",
+          "numero": 1,
+          "talla": "L",
+          "equipo": "MAYORES"
+        },
+        {
+          "fila": 13,
+          "nombre": "NICOLAS VEGA",
+          "numero": 23,
+          "talla": "M",
+          "equipo": "MAYORES"
+        }
+      ],
+      "hallazgos": [
+        {
+          "fila": 10,
+          "campo": "talla",
+          "codigo": "TALLA_NORMALIZADA",
+          "severidad": "advertencia",
+          "valorOriginal": "2XL",
+          "sugerencia": "XXL",
+          "mensaje": "Talla \"2XL\" interpretada como XXL."
+        },
+        {
+          "fila": 11,
+          "campo": "talla",
+          "codigo": "TALLA_NORMALIZADA",
+          "severidad": "advertencia",
+          "valorOriginal": "xg",
+          "sugerencia": "XL",
+          "mensaje": "Talla \"xg\" interpretada como XL."
+        }
+      ]
+    }
+  ]
+}
