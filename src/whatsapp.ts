@@ -8,7 +8,7 @@
  *     WhatsApp Business Cloud API de Meta.
  *
  * Variables opcionales (modo real):
- *   WHATSAPP_API_URL                 por defecto https://graph.facebook.com/v21.0
+ *   WHATSAPP_API_URL                 por defecto https://graph.facebook.com/v25.0
  *   WHATSAPP_LANG                    idioma de las plantillas, por defecto "es"
  *   WHATSAPP_TEMPLATE_POR_APROBAR    nombre de la plantilla aprobada por Meta
  *   WHATSAPP_TEMPLATE_EN_PRODUCCION  (si no se define, se envía texto libre,
@@ -73,7 +73,7 @@ export async function enviarAviso(p: Pedido, estado: EstadoPedido): Promise<Avis
   }
 
   try {
-    const base = process.env.WHATSAPP_API_URL ?? "https://graph.facebook.com/v21.0";
+    const base = process.env.WHATSAPP_API_URL ?? "https://graph.facebook.com/v25.0";
     const plantilla = process.env[VARIABLE_PLANTILLA[estado] ?? ""];
     const para = p.cliente.whatsapp.replace(/\D/g, ""); // la API pide solo dígitos
     const cuerpo = plantilla
@@ -102,11 +102,28 @@ export async function enviarAviso(p: Pedido, estado: EstadoPedido): Promise<Avis
     });
     const json = (await respuesta.json().catch(() => ({}))) as {
       messages?: { id: string }[];
-      error?: { message?: string };
+      error?: { message?: string; code?: number };
     };
-    if (!respuesta.ok) return registro("fallido", json.error?.message ?? `WhatsApp respondió con el código ${respuesta.status}.`);
+    if (!respuesta.ok) return registro("fallido", explicarError(json.error, respuesta.status));
     return registro("enviado", json.messages?.[0]?.id);
   } catch (e) {
     return registro("fallido", e instanceof Error ? e.message : "No se pudo conectar con WhatsApp.");
+  }
+}
+
+/** Traduce los errores más comunes de Meta a algo que se pueda resolver. */
+export function explicarError(error: { message?: string; code?: number } | undefined, status: number): string {
+  const original = error?.message ?? `WhatsApp respondió con el código ${status}.`;
+  switch (error?.code) {
+    case 131030:
+      return `Ese número no está en la lista de destinatarios de prueba. Agrégalo y verifícalo en Meta (WhatsApp > API Setup > "To" > Manage phone number list). [${original}]`;
+    case 190:
+      return `El token de WhatsApp venció o no es válido (el temporal dura 24 h). Genera uno nuevo en API Setup y pégalo en whatsapp-config.bat. [${original}]`;
+    case 100:
+      return `Meta rechazó la petición: revisa que WHATSAPP_PHONE_ID sea el "Phone number ID" (no el WhatsApp Business Account ID). [${original}]`;
+    case 131047:
+      return `Pasaron más de 24 h desde el último mensaje del cliente: escribe cualquier cosa desde ese celular al número de prueba y reenvía. [${original}]`;
+    default:
+      return original;
   }
 }

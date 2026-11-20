@@ -8,7 +8,7 @@ rem     (activarla) > Contrasenas de aplicaciones.
 rem  3) Abre INICIAR.bat. NUNCA compartas esta contrasena ni este archivo.
 rem ============================================================
 set CORREO_USUARIO=amiderosespana@gmail.com
-set CORREO_CLAVE=alfredo9210
+set CORREO_CLAVE=PEGA-AQUI-LA-CONTRASENA-DE-APLICACION
 set CORREO_NOMBRE=SPORT CHAMPION
 set CORREO_PIE=A tu servicio
 rem Copia oculta de cada aviso a tu propio correo (borra la linea si no la quieres):

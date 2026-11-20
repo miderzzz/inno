@@ -1,5 +1,5 @@
 {
-  "secuencia": 1,
+  "secuencia": 3,
   "pedidos": [
     {
       "codigo": "PSC-2026-00001",
@@ -138,6 +138,164 @@
           "mensaje": "Talla \"xg\" interpretada como XL."
         }
       ]
+    },
+    {
+      "codigo": "PSC-2026-00003",
+      "creadoEn": "2026-11-20T00:29:13.143Z",
+      "estado": "finalizado",
+      "historial": [
+        {
+          "estado": "por_aprobar",
+          "fecha": "2026-11-20T00:29:13.143Z"
+        },
+        {
+          "estado": "en_produccion",
+          "fecha": "2026-11-20T00:29:18.374Z"
+        },
+        {
+          "estado": "finalizado",
+          "fecha": "2026-11-20T00:42:21.525Z"
+        }
+      ],
+      "mensajes": [
+        {
+          "id": "cc19431d-48f3-460c-8874-a7125f46c785",
+          "canal": "whatsapp",
+          "fecha": "2026-11-20T00:29:13.147Z",
+          "paraEstado": "por_aprobar",
+          "para": "+573172406361",
+          "texto": "Hola Ana, recibimos el pedido PSC-2026-00003 de Colegio San José (6 prendas). Está *por aprobar*: revisa la cotización y la vista previa y confírmanos para pasarlo a producción. — Sport Champion",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el mensaje no sale al celular. Configura WHATSAPP_TOKEN y WHATSAPP_PHONE_ID para enviarlo de verdad."
+        },
+        {
+          "id": "ce976d29-5093-4480-8275-5790b415678d",
+          "canal": "correo",
+          "fecha": "2026-11-20T00:29:13.147Z",
+          "paraEstado": "por_aprobar",
+          "para": "carlos.mideros@uao.edu.co",
+          "texto": "Asunto: Pedido PSC-2026-00003 · Por aprobar | SPORT CHAMPION\nHola Ana, recibimos el pedido PSC-2026-00003 de Colegio San José con 6 prendas.",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el correo no se envía. Configura CORREO_USUARIO y CORREO_CLAVE para enviarlo de verdad."
+        },
+        {
+          "id": "80d3b6a8-601e-4f0a-9a1d-da528590df74",
+          "canal": "whatsapp",
+          "fecha": "2026-11-20T00:29:18.378Z",
+          "paraEstado": "en_produccion",
+          "para": "+573172406361",
+          "texto": "Hola Ana, tu pedido PSC-2026-00003 ya está *en producción*. Te avisaremos apenas esté finalizado. — Sport Champion",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el mensaje no sale al celular. Configura WHATSAPP_TOKEN y WHATSAPP_PHONE_ID para enviarlo de verdad."
+        },
+        {
+          "id": "02e7ba5f-46e8-48e8-8d4a-7978548549e2",
+          "canal": "correo",
+          "fecha": "2026-11-20T00:29:18.378Z",
+          "paraEstado": "en_produccion",
+          "para": "carlos.mideros@uao.edu.co",
+          "texto": "Asunto: Pedido PSC-2026-00003 · En producción | SPORT CHAMPION\nHola Ana, tu pedido PSC-2026-00003 ya está en producción.",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el correo no se envía. Configura CORREO_USUARIO y CORREO_CLAVE para enviarlo de verdad."
+        },
+        {
+          "id": "d9e51921-af6d-43a2-b930-8037bd3e74bc",
+          "canal": "whatsapp",
+          "fecha": "2026-11-20T00:42:21.529Z",
+          "paraEstado": "finalizado",
+          "para": "+573172406361",
+          "texto": "Hola Ana, tu pedido PSC-2026-00003 está *finalizado* y listo para entrega. ¡Gracias por confiar en Sport Champion!",
+          "resultado": "simulado",
+          "detalle": "Modo simulación: el mensaje no sale al celular. Configura WHATSAPP_TOKEN y WHATSAPP_PHONE_ID para enviarlo de verdad."
+        },
+        {
+          "id": "8e037827-2a62-4893-adf9-7cf97253ed07",
+          "canal": "correo",
+          "fecha": "2026-11-20T00:42:25.078Z",
+          "paraEstado": "finalizado",
+          "para": "carlos.mideros@uao.edu.co",
+          "texto": "Asunto: Pedido PSC-2026-00003 · Finalizado | SPORT CHAMPION\nHola Ana, tu pedido PSC-2026-00003 está finalizado y listo para entrega.",
+          "resultado": "enviado",
+          "detalle": "<5bb415c3-06ee-898c-776a-7def4a143a32@gmail.com> · copia a amiderosespana@gmail.com"
+        }
+      ],
+      "cliente": {
+        "organizacion": "Colegio San José",
+        "tipo": "colegio",
+        "nit": "900.123.456-7",
+        "contacto": "Ana Ruiz",
+        "email": "carlos.mideros@uao.edu.co",
+        "whatsapp": "+573172406361",
+        "aceptaWhatsapp": true
+      },
+      "archivo": {
+        "nombre": "pedido_colegio_sanjose.csv",
+        "filasTotal": 6
+      },
+      "mapaColumnas": {
+        "nombre": "Nombre",
+        "numero": "Número",
+        "talla": "Talla",
+        "equipo": "Equipo"
+      },
+      "resumen": {
+        "filasTotal": 6,
+        "filasValidas": 6,
+        "filasConError": 0,
+        "advertencias": 0,
+        "curvaTallas": {
+          "12": 1,
+          "14": 1,
+          "M": 2,
+          "L": 1,
+          "S": 1
+        }
+      },
+      "prendas": [
+        {
+          "fila": 10,
+          "nombre": "JUAN PEREZ",
+          "numero": 10,
+          "talla": "M",
+          "equipo": "SUB-15"
+        },
+        {
+          "fila": 11,
+          "nombre": "ANDRES GOMEZ",
+          "numero": 7,
+          "talla": "L",
+          "equipo": "SUB-15"
+        },
+        {
+          "fila": 12,
+          "nombre": "CAMILO NUÑEZ",
+          "numero": 1,
+          "talla": "S",
+          "equipo": "SUB-15"
+        },
+        {
+          "fila": 13,
+          "nombre": "MATEO ROJAS",
+          "numero": 9,
+          "talla": "M",
+          "equipo": "SUB-15"
+        },
+        {
+          "fila": 14,
+          "nombre": "SOFIA PEÑA",
+          "numero": 10,
+          "talla": "14",
+          "equipo": "SUB-12"
+        },
+        {
+          "fila": 15,
+          "nombre": "LAURA RIOS",
+          "numero": 5,
+          "talla": "12",
+          "equipo": "SUB-12"
+        }
+      ],
+      "hallazgos": []
     }
   ]
 }

@@ -24,6 +24,10 @@ import { ErrorArchivo, leerHojaDeCalculo } from "./lector.js";
 import { validarPedido } from "./validador.js";
 import { enviarCorreo, modoCorreo } from "./correo.js";
 import { enviarAviso, modoWhatsapp } from "./whatsapp.js";
+import { cargarConfigLocal } from "./config-local.js";
+
+// Lee correo-config.bat y whatsapp-config.bat (sirve con INICIAR.bat, npm run server o npm run dev).
+const cargaLocal = cargarConfigLocal();
 
 const MAX_MB = 5;
 const subida = multer({
@@ -157,4 +161,22 @@ app.post("/api/pedidos/validar", subida.single("archivo"), async (req, res) => {
 });
 
 const puerto = Number(process.env.PORT ?? 3000);
-app.listen(puerto, () => console.log(`Pedido Seguro en http://localhost:${puerto}`));
+const servidor = app.listen(puerto, () => {
+  console.log(`Pedido Seguro en http://localhost:${puerto}`);
+  for (const c of cargaLocal) {
+    if (c.existe) console.log(`  ${c.archivo}: ${c.cargadas.length ? "cargado" : "sin datos útiles"}`);
+    c.avisos.forEach((a) => console.log(`  ATENCIÓN: ${a}`));
+  }
+  const correo = modoCorreo();
+  console.log(`  Correo:   ${correo === "real" ? `REAL (envía desde ${process.env.CORREO_USUARIO})` : "simulación (falta CORREO_USUARIO o CORREO_CLAVE en correo-config.bat)"}`);
+  console.log(`  WhatsApp: ${modoWhatsapp() === "real" ? "REAL" : "simulación"}`);
+});
+servidor.on("error", (e: NodeJS.ErrnoException) => {
+  if (e.code === "EADDRINUSE") {
+    console.error(`\nEl puerto ${puerto} ya está ocupado: la app ya está abierta en otra ventana o terminal.`);
+    console.error("Ciérrala (o presiona Ctrl+C en ella) y vuelve a arrancar. Si no la encuentras, en PowerShell:");
+    console.error(`  Get-NetTCPConnection -LocalPort ${puerto} -State Listen | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }\n`);
+    process.exit(1);
+  }
+  throw e;
+});

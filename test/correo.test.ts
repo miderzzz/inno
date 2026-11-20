@@ -143,3 +143,20 @@ test("sin conexión al servidor: 'fallido', no lanza", async () => {
   const a = await enviarCorreo(nuevoPedido(), "en_produccion");
   assert.equal(a?.resultado, "fallido");
 });
+
+test("lee correo-config.bat aunque se arranque con npm run server", async () => {
+  const { leerArchivoSet, cargarConfigLocal } = await import("../src/config-local.js");
+  const bat = "@echo off\r\nrem comentario\r\nset CORREO_USUARIO=amiderosespana@gmail.com\r\nset CORREO_CLAVE=abcd efgh ijkl mnop \r\nset CORREO_NOMBRE=SPORT CHAMPION\r\nset \"CORREO_PIE=A tu servicio\"\r\n";
+  assert.deepEqual(leerArchivoSet(bat), { CORREO_USUARIO: "amiderosespana@gmail.com", CORREO_CLAVE: "abcd efgh ijkl mnop", CORREO_NOMBRE: "SPORT CHAMPION", CORREO_PIE: "A tu servicio" });
+  const dir = mkdtempSync(join(tmpdir(), "cfg-"));
+  const { writeFileSync } = await import("node:fs");
+  writeFileSync(join(dir, "correo-config.bat"), bat);
+  const r = cargarConfigLocal(dir);
+  assert.equal(modoCorreo(), "real");
+  assert.ok(r[0].cargadas.includes("CORREO_CLAVE"));
+  writeFileSync(join(dir, "correo-config.bat"), "set CORREO_USUARIO=x@y.co\r\nset CORREO_CLAVE=PEGA-AQUI-LA-CONTRASENA-DE-APLICACION\r\n");
+  delete process.env.CORREO_CLAVE; delete process.env.CORREO_USUARIO;
+  const r2 = cargarConfigLocal(dir);
+  assert.equal(modoCorreo(), "simulado");
+  assert.match(r2[0].avisos.join(" "), /CORREO_CLAVE no tiene valor/);
+});

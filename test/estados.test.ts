@@ -167,3 +167,10 @@ test("si no hay conexión con WhatsApp, queda 'fallido' sin lanzar error", async
   const m = await enviarAviso(nuevoPedido(), "por_aprobar");
   assert.equal(m?.resultado, "fallido");
 });
+
+test("explica los errores comunes de Meta", async () => {
+  const { explicarError } = await import("../src/whatsapp.js");
+  assert.match(explicarError({ code: 131030, message: "x" }, 400), /lista de destinatarios de prueba/);
+  assert.match(explicarError({ code: 190, message: "x" }, 401), /token .* venció/);
+  assert.equal(explicarError({ message: "otro" }, 400), "otro");
+});
