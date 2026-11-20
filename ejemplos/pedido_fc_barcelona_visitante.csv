@@ -1,0 +1,18 @@
+﻿Organización;Academia de Fútbol Cali Norte
+Tipo;club
+NIT;901.234.567-8
+Contacto;Marta Gil
+Correo;marta.gil@example.com
+WhatsApp;315 222 3344
+Autoriza WhatsApp;No
+Equipo;FC Barcelona Visitante
+
+Nombre;Número;Talla;Categoría
+Pablo Gómez;8;M;Sub-17
+Samuel Díaz;10;S;Sub-17
+Tomás Vélez;1;L;Sub-17
+Emilio Cruz;4;M;Sub-17
+Jacobo Mesa;9;XL;Sub-17
+Valeria Soto;11;14;Sub-13
+Lucía Prado;7;12;Sub-13
+Martín Ochoa;10;16;Sub-13

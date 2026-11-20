@@ -2,11 +2,12 @@
 Tipo;club
 NIT;800.555.321-0
 Contacto;Luis Mora
-Correo;luis@lostigres.co
+Correo;luis.mora@example.com
 WhatsApp;+57 311 765 4321
 Autoriza WhatsApp;Sí
+Equipo;Los Tigres Titular
 
-Nombre;Número;Talla;Equipo
+Nombre;Número;Talla;Categoría
 Juan Pérez;10;m;Sub-15
 Andrés Gómez;10;L;Sub-15
 María Fernanda Rodríguez;5;S;Sub-15

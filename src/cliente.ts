@@ -54,6 +54,14 @@ export function validarCliente(entrada: Record<string, unknown>): ResultadoClien
   };
 }
 
+/** Equipo y versión del uniforme del pedido, p. ej. "FC Barcelona Visitante". Obligatorio. */
+export function validarEquipo(valor: unknown): { ok: true; equipo: string } | { ok: false; error: string } {
+  const equipo = String(valor ?? "").trim().replace(/\s+/g, " ");
+  if (equipo.length < 2) return { ok: false, error: "Escribe el equipo del pedido. Ejemplo: FC Barcelona Visitante." };
+  if (equipo.length > 80) return { ok: false, error: "Máximo 80 caracteres." };
+  return { ok: true, equipo };
+}
+
 /** "Sí", "si", "yes", "x", "1", "true" -> true. Cualquier otra cosa (o vacío) -> false. */
 export function esAfirmativo(valor: string): boolean {
   return ["si", "yes", "true", "1", "x", "ok", "acepta", "autoriza"].includes(sinTildes(valor).trim().toLowerCase());

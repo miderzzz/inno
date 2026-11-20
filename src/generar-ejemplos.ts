@@ -3,9 +3,12 @@
  *   npx tsx src/generar-ejemplos.ts
  *
  * Formato de cada archivo (CSV o Excel):
- *   - Arriba: bloque "etiqueta | valor" con los datos del cliente.
+ *   - Arriba: bloque "etiqueta | valor" con los datos del cliente y el equipo del pedido.
  *   - Una fila en blanco.
- *   - La tabla: Nombre | Número | Talla | Equipo.
+ *   - La tabla: Nombre | Número | Talla | Categoría.
+ *
+ * Los correos de ejemplo usan el dominio reservado example.com: si los avisos por correo
+ * están activos, nunca le llegan a una persona real.
  */
 import ExcelJS from "exceljs";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -18,7 +21,7 @@ const TIPOS = "colegio,club,liga,empresa,otro";
 const TALLAS = "4,6,8,10,12,14,16,XS,S,M,L,XL,XXL,XXXL";
 
 interface DatosCliente {
-  organizacion: string; tipo: string; nit: string; contacto: string; email: string; whatsapp: string; autoriza: string;
+  organizacion: string; tipo: string; nit: string; contacto: string; email: string; whatsapp: string; autoriza: string; equipo: string;
 }
 
 const bloque = (c: DatosCliente): Fila[] => [
@@ -29,8 +32,10 @@ const bloque = (c: DatosCliente): Fila[] => [
   ["Correo", c.email],
   ["WhatsApp", c.whatsapp],
   ["Autoriza WhatsApp", c.autoriza],
+  ["Equipo", c.equipo],
 ];
-const ENCABEZADO: Fila = ["Nombre", "Número", "Talla", "Equipo"];
+const FILAS_BLOQUE = 8; // filas del bloque de arriba; luego una en blanco y la tabla
+const ENCABEZADO: Fila = ["Nombre", "Número", "Talla", "Categoría"];
 
 // ---------- CSV ----------
 function celdaCsv(v: string | number, sep: string): string {
@@ -52,13 +57,14 @@ async function crearXlsx(nombre: string, filas: Fila[]) {
   await libro.xlsx.writeFile(`${DIR}/${nombre}`);
 }
 function formatear(hoja: ExcelJS.Worksheet) {
+  const encabezado = FILAS_BLOQUE + 2;
   hoja.columns = [{ width: 26 }, { width: 28 }, { width: 10 }, { width: 16 }];
-  for (let r = 1; r <= 7; r++) hoja.getCell(`A${r}`).font = { bold: true };
-  hoja.getRow(9).font = { bold: true };
-  hoja.getRow(9).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE8EEF9" } };
+  for (let r = 1; r <= FILAS_BLOQUE; r++) hoja.getCell(`A${r}`).font = { bold: true };
+  hoja.getRow(encabezado).font = { bold: true };
+  hoja.getRow(encabezado).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE8EEF9" } };
   hoja.getCell("B2").dataValidation = { type: "list", allowBlank: true, formulae: [`"${TIPOS}"`] };
   hoja.getCell("B7").dataValidation = { type: "list", allowBlank: true, formulae: ['"Sí,No"'] };
-  for (let r = 10; r <= 309; r++) {
+  for (let r = encabezado + 1; r <= encabezado + 300; r++) {
     hoja.getCell(`C${r}`).dataValidation = { type: "list", allowBlank: true, formulae: [`"${TALLAS}"`] };
   }
 }
@@ -67,12 +73,12 @@ function agregarAyuda(libro: ExcelJS.Workbook) {
   ayuda.columns = [{ width: 100 }];
   [
     "CÓMO LLENAR ESTE ARCHIVO",
-    "1. Arriba (filas 1 a 7) escribe los datos del cliente: organización, tipo, NIT, contacto, correo, WhatsApp y si autoriza avisos por WhatsApp (Sí/No).",
-    "2. Deja la fila 8 en blanco.",
-    "3. Desde la fila 10 escribe una prenda por fila: Nombre, Número (0 a 99), Talla y Equipo.",
+    "1. Arriba (filas 1 a 8) escribe los datos del cliente: organización, tipo, NIT, contacto, correo, WhatsApp, si autoriza avisos por WhatsApp (Sí/No) y el equipo del pedido (por ejemplo: FC Barcelona Visitante).",
+    "2. Deja la fila 9 en blanco.",
+    "3. Desde la fila 11 escribe una prenda por fila: Nombre, Número (0 a 99), Talla y Categoría (por ejemplo Sub-15).",
     "4. Tallas válidas: 4, 6, 8, 10, 12, 14, 16, XS, S, M, L, XL, XXL, XXXL.",
     "5. El nombre se estampa en mayúsculas, máximo 12 caracteres, sin símbolos ni emojis.",
-    "6. El número de camiseta no puede repetirse dentro del mismo equipo.",
+    "6. El número de camiseta no puede repetirse dentro de la misma categoría.",
     "7. Al subir el archivo, el formulario se llena solo con los datos del cliente.",
     "8. Solo se envían avisos por WhatsApp (por aprobar, en producción, finalizado) si el contacto autoriza: escribe Sí en la fila 7.",
   ].forEach((t, i) => { const c = ayuda.addRow([t]); if (i === 0) c.font = { bold: true }; });
@@ -81,11 +87,18 @@ function agregarAyuda(libro: ExcelJS.Workbook) {
 // ---------- Datos de ejemplo ----------
 const sanJose: DatosCliente = {
   organizacion: "Colegio San José", tipo: "colegio", nit: "900.123.456-7",
-  contacto: "Ana Ruiz", email: "ana.ruiz@sanjose.edu.co", whatsapp: "300 123 4567", autoriza: "Sí",
+  contacto: "Ana Ruiz", email: "ana.ruiz@example.com", whatsapp: "300 123 4567", autoriza: "Sí",
+  equipo: "Colegio San José Local",
 };
 const tigres: DatosCliente = {
   organizacion: "Club Deportivo Los Tigres", tipo: "club", nit: "800.555.321-0",
-  contacto: "Luis Mora", email: "luis@lostigres.co", whatsapp: "+57 311 765 4321", autoriza: "Sí",
+  contacto: "Luis Mora", email: "luis.mora@example.com", whatsapp: "+57 311 765 4321", autoriza: "Sí",
+  equipo: "Los Tigres Titular",
+};
+const academia: DatosCliente = {
+  organizacion: "Academia de Fútbol Cali Norte", tipo: "club", nit: "901.234.567-8",
+  contacto: "Marta Gil", email: "marta.gil@example.com", whatsapp: "315 222 3344", autoriza: "No",
+  equipo: "FC Barcelona Visitante",
 };
 
 const prendasSanJose: Fila[] = [
@@ -136,6 +149,7 @@ await crearCsv(
     ["Correo electrónico", tigres.email],
     ["Celular", "311 765 4321"],
     ["Acepta WhatsApp", "Sí"],
+    ["Uniforme", tigres.equipo],
     [],
     ENCABEZADO,
     ...prendasTigres,
@@ -149,13 +163,27 @@ await crearCsv("pedido_con_errores.csv", [...bloque(tigres), [], ENCABEZADO, ...
 // 6) CSV sin datos del cliente: hay que escribirlos en el formulario
 await crearCsv(
   "pedido_sin_datos_cliente.csv",
-  [["Nombre", "Dorsal", "Talla", "Equipo"], ["José Muñoz", 9, "2XL", "Mayores"], ["Iván Ortiz", 11, "xg", "Mayores"]],
+  [["Nombre", "Dorsal", "Talla", "Categoría"], ["José Muñoz", 9, "2XL", "Mayores"], ["Iván Ortiz", 11, "xg", "Mayores"]],
   { sep: ";", bom: true },
 );
 
-// 7) Plantillas vacías para entregar a los clientes
+// 7) CSV de un pedido de réplicas: equipo "FC Barcelona Visitante"
+const prendasAcademia: Fila[] = [
+  ["Pablo Gómez", 8, "M", "Sub-17"],
+  ["Samuel Díaz", 10, "S", "Sub-17"],
+  ["Tomás Vélez", 1, "L", "Sub-17"],
+  ["Emilio Cruz", 4, "M", "Sub-17"],
+  ["Jacobo Mesa", 9, "XL", "Sub-17"],
+  ["Valeria Soto", 11, "14", "Sub-13"],
+  ["Lucía Prado", 7, "12", "Sub-13"],
+  ["Martín Ochoa", 10, "16", "Sub-13"],
+];
+await crearCsv("pedido_fc_barcelona_visitante.csv", [...bloque(academia), [], ENCABEZADO, ...prendasAcademia], { sep: ";", bom: true });
+await crearXlsx("pedido_fc_barcelona_visitante.xlsx", [...bloque(academia), [], ENCABEZADO, ...prendasAcademia]);
+
+// 8) Plantillas vacías para entregar a los clientes
 const plantilla: Fila[] = [
-  ["Organización", ""], ["Tipo", "colegio"], ["NIT", ""], ["Contacto", ""], ["Correo", ""], ["WhatsApp", ""], ["Autoriza WhatsApp", ""],
+  ["Organización", ""], ["Tipo", "colegio"], ["NIT", ""], ["Contacto", ""], ["Correo", ""], ["WhatsApp", ""], ["Autoriza WhatsApp", ""], ["Equipo", ""],
   [], ENCABEZADO,
 ];
 await crearCsv("plantilla_pedido.csv", plantilla, { sep: ";", bom: true });

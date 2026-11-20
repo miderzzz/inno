@@ -2,11 +2,12 @@
 Tipo;colegio
 NIT;900.123.456-7
 Contacto;Ana Ruiz
-Correo;ana.ruiz@sanjose.edu.co
+Correo;ana.ruiz@example.com
 WhatsApp;300 123 4567
 Autoriza WhatsApp;Sí
+Equipo;Colegio San José Local
 
-Nombre;Número;Talla;Equipo
+Nombre;Número;Talla;Categoría
 Juan Pérez;10;M;Sub-15
 Andrés Gómez;7;L;Sub-15
 Camilo Núñez;1;S;Sub-15

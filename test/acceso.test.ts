@@ -82,3 +82,27 @@ test("en Vercel sin APP_CLAVE se bloquea, y sin base de datos lo dice claro", as
   assert.equal(sinBase.status, 503);
   assert.match((await sinBase.json()).error, /Neon/);
 });
+
+test("crear pedido exige el equipo y lo guarda (del archivo o del formulario)", async () => {
+  const { readFile } = await import("node:fs/promises");
+  const subir = async (archivo: string, extra: Record<string, string> = {}) => {
+    const fd = new FormData();
+    fd.set("archivo", new Blob([await readFile(`ejemplos/${archivo}`)]), archivo);
+    for (const [k, v] of Object.entries(extra)) fd.set(k, v);
+    return pedir("/api/pedidos", { method: "POST", body: fd });
+  };
+  const delArchivo = await subir("pedido_fc_barcelona_visitante.csv");
+  assert.equal(delArchivo.status, 201);
+  const p = await delArchivo.json();
+  assert.equal(p.equipo, "FC Barcelona Visitante");
+  assert.equal(p.estado, "por_aprobar");
+
+  const sinEquipo = await subir("pedido_sin_datos_cliente.csv", { organizacion: "Club X", contacto: "Ana Ruiz", email: "ana@example.com" });
+  assert.equal(sinEquipo.status, 400);
+  assert.ok((await sinEquipo.json()).errores.equipo);
+
+  const conFormulario = await subir("pedido_fc_barcelona_visitante.csv", { equipo: "Real Madrid Local" });
+  assert.equal((await conFormulario.json()).equipo, "Real Madrid Local"); // lo escrito en el formulario manda
+  const lista = await (await pedir("/api/pedidos")).json();
+  assert.deepEqual(lista.map((x: { equipo: string }) => x.equipo), ["Real Madrid Local", "FC Barcelona Visitante"]);
+});

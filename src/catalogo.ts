@@ -62,7 +62,7 @@ export const ENCABEZADOS: Record<"nombre" | "numero" | "talla" | "equipo" | "pro
  * (sin tildes ni signos), así "Correo electrónico:" y "E-mail" valen igual.
  */
 export const ETIQUETAS_CLIENTE: Record<
-  "organizacion" | "tipo" | "nit" | "contacto" | "email" | "whatsapp" | "aceptaWhatsapp",
+  "organizacion" | "tipo" | "nit" | "contacto" | "email" | "whatsapp" | "aceptaWhatsapp" | "equipo",
   string[]
 > = {
   organizacion: ["organizacion", "colegio", "club", "empresa", "cliente", "institucion", "colegio club o empresa", "colegio club empresa"],
@@ -71,6 +71,9 @@ export const ETIQUETAS_CLIENTE: Record<
   contacto: ["contacto", "persona de contacto", "responsable", "nombre del contacto"],
   email: ["correo", "email", "e mail", "correo electronico", "mail"],
   whatsapp: ["whatsapp", "celular", "telefono", "telefono whatsapp", "movil"],
+  // Equipo y versión del uniforme de todo el pedido (p. ej. "FC Barcelona Visitante").
+  // Va en el bloque de arriba; la columna "Equipo" de la tabla es la categoría de cada jugador.
+  equipo: ["equipo", "equipo del pedido", "uniforme", "equipo uniforme", "equipacion", "modelo", "modelo de uniforme", "camiseta"],
   aceptaWhatsapp: ["autoriza whatsapp", "acepta whatsapp", "autorizacion whatsapp", "autoriza avisos por whatsapp", "autoriza avisos"],
 };
 

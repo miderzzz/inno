@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { leerHojaDeCalculo, mapearTabla } from "../src/lector.js";
-import { combinarCliente, validarCliente } from "../src/cliente.js";
+import { combinarCliente, validarCliente, validarEquipo } from "../src/cliente.js";
 import { validarPedido } from "../src/validador.js";
 
 const leer = async (nombre: string) => leerHojaDeCalculo(await readFile(`ejemplos/${nombre}`), nombre);
@@ -40,7 +40,7 @@ test("CSV con ';' y BOM: trae al cliente y 6 prendas válidas", async () => {
 test("CSV con coma y etiquetas distintas se lee igual", async () => {
   const l = await leer("pedido_club_tigres.csv");
   assert.equal(l.datosCliente.organizacion, "Club Deportivo Los Tigres");
-  assert.equal(l.datosCliente.email, "luis@lostigres.co");
+  assert.equal(l.datosCliente.email, "luis.mora@example.com");
   assert.equal(l.datosCliente.whatsapp, "311 765 4321");
   assert.equal(validarPedido(l).resumen.filasValidas, 4);
 });
@@ -79,4 +79,19 @@ test("tipo: 'Club deportivo' se entiende como club; uno desconocido es error", (
   assert.ok(ok.ok && ok.cliente.tipo === "club");
   const mal = validarCliente({ ...base, tipo: "fundación" });
   assert.equal(mal.ok, false);
+});
+
+test("el equipo del pedido se lee del bloque de arriba (FC Barcelona Visitante)", async () => {
+  for (const nombre of ["pedido_fc_barcelona_visitante.csv", "pedido_fc_barcelona_visitante.xlsx"]) {
+    const r = await leerHojaDeCalculo(await readFile(`ejemplos/${nombre}`), nombre);
+    assert.equal(r.datosCliente.equipo, "FC Barcelona Visitante", nombre);
+    assert.equal(r.filas.length, 8);
+    assert.equal(validarPedido(r).valido, true);
+  }
+});
+
+test("validarEquipo exige el equipo y limita el largo", () => {
+  assert.deepEqual(validarEquipo("  FC   Barcelona Visitante "), { ok: true, equipo: "FC Barcelona Visitante" });
+  assert.equal(validarEquipo("").ok, false);
+  assert.equal(validarEquipo("x".repeat(81)).ok, false);
 });

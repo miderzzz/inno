@@ -4,74 +4,202 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pedido Seguro · Sport Champion</title>
+<meta name="color-scheme" content="light dark">
 <style>
-  :root { --azul: #2563eb; --borde: #e2e2e2; --gris: #666; }
+  /* Lenguaje visual inspirado en macOS: tipografía del sistema, superficies claras con
+     bordes finos, esquinas redondeadas, barra translúcida y los colores de sistema de Apple. */
+  :root {
+    --fondo: #f5f5f7; --superficie: #ffffff; --superficie-2: #fbfbfd; --relleno: rgba(116,116,128,.08); --relleno-2: rgba(116,116,128,.14);
+    --texto: #1d1d1f; --texto-2: #6e6e73; --texto-3: #8e8e93;
+    --separador: rgba(0,0,0,.08); --separador-fuerte: rgba(0,0,0,.14);
+    --azul: #007aff; --azul-tinte: rgba(0,122,255,.12); --azul-foco: rgba(0,122,255,.32);
+    --verde: #28a745; --verde-sis: #34c759; --verde-tinte: rgba(52,199,89,.15);
+    --naranja: #c45f00; --naranja-sis: #ff9500; --naranja-tinte: rgba(255,149,0,.16);
+    --rojo: #d70015; --rojo-sis: #ff3b30; --rojo-tinte: rgba(255,59,48,.12);
+    --indigo: #5856d6; --indigo-tinte: rgba(88,86,214,.13);
+    --amarillo-tinte: rgba(255,204,0,.2); --amarillo-texto: #8a6100;
+    --sombra: 0 1px 2px rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.05);
+    --sombra-alta: 0 2px 6px rgba(0,0,0,.06), 0 12px 32px rgba(0,0,0,.10);
+    --barra: rgba(255,255,255,.72);
+    --r: 12px; --r-ctl: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --fondo: #161617; --superficie: #232325; --superficie-2: #2a2a2d; --relleno: rgba(118,118,128,.18); --relleno-2: rgba(118,118,128,.28);
+      --texto: #f5f5f7; --texto-2: #a1a1a6; --texto-3: #8e8e93;
+      --separador: rgba(255,255,255,.09); --separador-fuerte: rgba(255,255,255,.16);
+      --azul: #0a84ff; --azul-tinte: rgba(10,132,255,.2); --azul-foco: rgba(10,132,255,.45);
+      --verde: #30d158; --verde-sis: #30d158; --verde-tinte: rgba(48,209,88,.18);
+      --naranja: #ff9f0a; --naranja-sis: #ff9f0a; --naranja-tinte: rgba(255,159,10,.18);
+      --rojo: #ff453a; --rojo-sis: #ff453a; --rojo-tinte: rgba(255,69,58,.18);
+      --indigo: #7d7aff; --indigo-tinte: rgba(94,92,230,.24);
+      --amarillo-tinte: rgba(255,214,10,.16); --amarillo-texto: #ffd60a;
+      --sombra: 0 0 0 .5px rgba(255,255,255,.06), 0 4px 16px rgba(0,0,0,.35);
+      --sombra-alta: 0 0 0 .5px rgba(255,255,255,.08), 0 12px 32px rgba(0,0,0,.5);
+      --barra: rgba(30,30,32,.72);
+    }
+  }
   * { box-sizing: border-box; }
-  body { font-family: system-ui, sans-serif; margin: 0; color: #1c1c1c; background: #f5f6f8; }
-  header { background: #fff; border-bottom: 1px solid var(--borde); padding: 12px 24px; display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
-  header h1 { font-size: 18px; margin: 0; }
-  nav { display: flex; gap: 8px; }
-  nav button { background: none; color: #333; border: 1px solid transparent; }
-  nav button.activo { background: #eff6ff; color: var(--azul); border-color: #bfdbfe; font-weight: 600; }
-  main { max-width: 980px; margin: 24px auto; padding: 0 16px; }
-  h2 { font-size: 18px; margin: 0 0 12px; }
-  h3 { font-size: 15px; margin: 24px 0 8px; }
-  .tarjeta { background: #fff; border: 1px solid var(--borde); border-radius: 10px; padding: 18px; margin-bottom: 16px; }
-  .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; }
-  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
-  label.check { font-weight: 500; display: flex; gap: 8px; align-items: center; margin-top: 14px; }
-  input, select { width: 100%; padding: 9px 10px; border: 1px solid #bbb; border-radius: 8px; font-size: 14px; background: #fff; }
-  input[type=checkbox] { width: auto; }
-  input.malo { border-color: #dc2626; background: #fef2f2; }
-  .msg-error { color: #b91c1c; font-size: 12px; margin-top: 3px; }
-  button { background: var(--azul); color: #fff; border: 0; border-radius: 8px; padding: 9px 16px; font-size: 14px; cursor: pointer; }
-  button.sec { background: #fff; color: #333; border: 1px solid #bbb; }
-  button.peligro { background: #fff; color: #b91c1c; border: 1px solid #fca5a5; }
-  button.grande { padding: 12px 22px; font-size: 15px; font-weight: 600; }
-  button:disabled { opacity: .6; cursor: wait; }
-  .caja { border: 2px dashed #999; border-radius: 10px; padding: 22px; text-align: center; background: #fafafa; }
-  .caja.sobre { border-color: var(--azul); background: #eff6ff; }
-  table { border-collapse: collapse; width: 100%; font-size: 14px; }
-  th, td { border-bottom: 1px solid var(--borde); padding: 8px; text-align: left; vertical-align: top; }
-  th { font-size: 12px; text-transform: uppercase; color: var(--gris); }
-  tr.clic { cursor: pointer; } tr.clic:hover { background: #f0f6ff; }
-  .insignia { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
-  .por_aprobar { background: #dbeafe; color: #1e40af; } .en_produccion { background: #ffedd5; color: #9a3412; }
-  .finalizado { background: #dcfce7; color: #166534; } .borrador { background: #fee2e2; color: #991b1b; }
-  .m-enviado { background: #dcfce7; color: #166534; } .m-simulado { background: #e0e7ff; color: #3730a3; }
-  .m-fallido { background: #fee2e2; color: #991b1b; } .m-omitido { background: #fef3c7; color: #92400e; }
-  .error { color: #b91c1c; font-weight: 600; } .advertencia { color: #b45309; font-weight: 600; }
-  .resumen { padding: 12px 14px; border-radius: 8px; font-weight: 600; margin: 12px 0; }
-  .ok { background: #dcfce7; } .mal { background: #fee2e2; }
-  .datos { display: grid; grid-template-columns: 130px 1fr; gap: 6px 12px; font-size: 14px; }
-  .datos dt { color: var(--gris); } .datos dd { margin: 0; font-weight: 500; }
-  .barra { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
-  .tallas span { display: inline-block; background: #eef2ff; border-radius: 6px; padding: 3px 9px; margin: 0 6px 6px 0; font-size: 13px; }
-  .vacio { text-align: center; color: var(--gris); padding: 30px; }
-  .lectura { margin-top: 10px; font-size: 14px; text-align: left; }
-  .lectura .bien { color: #166534; } .lectura .aviso { color: #92400e; }
-  input.auto { background: #f0fdf4; border-color: #86efac; }
-  small, .nota { color: var(--gris); font-size: 12px; }
-  .flash { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-size: 14px; background: #e0f2fe; color: #075985; }
-  .flash.malo { background: #fee2e2; color: #991b1b; }
-  /* línea de avance */
-  .pasos { display: flex; align-items: center; margin: 18px 0 8px; }
-  .paso { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #888; white-space: nowrap; }
-  .paso .punto { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #ccc; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
-  .paso.hecho { color: #166534; } .paso.hecho .punto { background: #16a34a; border-color: #16a34a; color: #fff; }
-  .paso.actual { color: #1c1c1c; font-weight: 700; } .paso.actual .punto { border-color: var(--azul); color: var(--azul); background: #eff6ff; }
-  .linea { flex: 1; height: 2px; background: #ddd; margin: 0 10px; min-width: 20px; }
-  .accion { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 14px 0 4px; }
-  .texto-msg { max-width: 420px; white-space: pre-wrap; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
+    margin: 0; color: var(--texto); background: var(--fondo); font-size: 14px; line-height: 1.45;
+    -webkit-font-smoothing: antialiased; letter-spacing: -.005em;
+  }
+  ::selection { background: var(--azul-foco); }
+
+  /* Barra superior translúcida */
+  header {
+    position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+    padding: 10px 24px; background: var(--barra); border-bottom: .5px solid var(--separador-fuerte);
+    -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
+  }
+  .marca { display: flex; align-items: center; gap: 10px; }
+  .marca .icono {
+    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff;
+    background: linear-gradient(160deg, #3ea0ff 0%, #007aff 45%, #5856d6 100%);
+    box-shadow: inset 0 .5px 0 rgba(255,255,255,.45), 0 1px 3px rgba(0,0,0,.18);
+  }
+  .marca h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  .marca h1 span { color: var(--texto-2); font-weight: 500; }
+
+  /* Navegación como control segmentado */
+  nav { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--relleno-2); }
+  nav button { background: transparent; color: var(--texto); border: 0; padding: 5px 14px; border-radius: 7px; font-weight: 500; box-shadow: none; }
+  nav button:hover { background: var(--relleno); }
+  nav button.activo { background: var(--superficie); box-shadow: 0 1px 2px rgba(0,0,0,.12), 0 0 0 .5px rgba(0,0,0,.04); }
+  #contador { color: var(--texto-2); font-variant-numeric: tabular-nums; }
   #salir { margin-left: auto; }
-  .ingreso { max-width: 380px; margin: 60px auto; }
-  .ingreso h2 { margin-bottom: 6px; }
-  .ingreso button { width: 100%; margin-top: 14px; }
+
+  main { max-width: 1040px; margin: 28px auto 64px; padding: 0 20px; }
+  h2 { font-size: 22px; font-weight: 700; letter-spacing: -.02em; margin: 0 0 14px; }
+  h3 { font-size: 13px; font-weight: 600; margin: 22px 0 10px; color: var(--texto-2); text-transform: none; letter-spacing: 0; }
+  .tarjeta h3:first-child, .tarjeta .barra h3, h3.sin-margen { margin-top: 0; }
+
+  /* Superficies */
+  .tarjeta { background: var(--superficie); border: .5px solid var(--separador); border-radius: var(--r); padding: 20px; margin-bottom: 16px; box-shadow: var(--sombra); }
+  .rejilla { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .barra { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .herramientas { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  /* Controles */
+  label { display: block; font-size: 12px; font-weight: 600; color: var(--texto-2); margin-bottom: 5px; }
+  label.check { font-weight: 400; font-size: 13px; color: var(--texto); display: flex; gap: 9px; align-items: flex-start; margin-top: 16px; }
+  input, select {
+    width: 100%; padding: 8px 11px; font: inherit; color: var(--texto); background: var(--superficie);
+    border: .5px solid var(--separador-fuerte); border-radius: var(--r-ctl);
+    box-shadow: 0 .5px 1px rgba(0,0,0,.05) inset; transition: box-shadow .15s, border-color .15s;
+  }
+  input::placeholder { color: var(--texto-3); }
+  input:focus, select:focus { outline: none; border-color: var(--azul); box-shadow: 0 0 0 3.5px var(--azul-foco); }
+  select { appearance: none; -webkit-appearance: none; padding-right: 30px; cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M1.5 5 5 1.5 8.5 5M1.5 9 5 12.5 8.5 9' fill='none' stroke='%238e8e93' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; }
+  input[type=checkbox] { width: 16px; height: 16px; margin: 1px 0 0; accent-color: var(--azul); flex: none; box-shadow: none; }
+  input[type=file] { padding: 6px; border-style: dashed; background: transparent; box-shadow: none; }
+  input[type=file]::file-selector-button { font: inherit; font-weight: 500; border: 0; border-radius: 6px; padding: 5px 12px; margin-right: 10px; background: var(--relleno-2); color: var(--texto); cursor: pointer; }
+  input.malo { border-color: var(--rojo-sis); box-shadow: 0 0 0 3px var(--rojo-tinte); }
+  input.auto { background: var(--verde-tinte); border-color: transparent; }
+  .msg-error { color: var(--rojo); font-size: 12px; margin-top: 4px; min-height: 0; }
+  .ayuda-campo { color: var(--texto-3); font-size: 12px; margin-top: 4px; }
+
+  button {
+    font: inherit; font-weight: 500; color: #fff; background: var(--azul); border: 0; border-radius: var(--r-ctl);
+    padding: 7px 16px; cursor: pointer; box-shadow: 0 .5px 1px rgba(0,0,0,.12), inset 0 .5px 0 rgba(255,255,255,.18);
+    transition: filter .15s, transform .05s;
+  }
+  button:hover { filter: brightness(1.06); }
+  button:active { transform: scale(.98); filter: brightness(.95); }
+  button:focus-visible { outline: none; box-shadow: 0 0 0 3.5px var(--azul-foco); }
+  button.sec { background: var(--superficie); color: var(--texto); box-shadow: 0 0 0 .5px var(--separador-fuerte), 0 .5px 1.5px rgba(0,0,0,.08); }
+  button.peligro { background: transparent; color: var(--rojo); box-shadow: none; }
+  button.peligro:hover { background: var(--rojo-tinte); filter: none; }
+  button.grande { padding: 10px 22px; font-size: 15px; border-radius: 10px; }
+  button:disabled { opacity: .55; cursor: default; transform: none; }
+
+  /* Zona para soltar el archivo */
+  .caja { border: 1.5px dashed var(--separador-fuerte); border-radius: var(--r); padding: 22px; text-align: center; background: var(--superficie-2); transition: background .15s, border-color .15s; }
+  .caja.sobre { border-color: var(--azul); background: var(--azul-tinte); }
+  .caja .icono-archivo { width: 40px; height: 40px; margin: 0 auto 8px; color: var(--azul); }
+  .caja input[type=file] { max-width: 380px; margin: 6px auto 0; display: block; }
+  .campo-equipo { margin-bottom: 18px; }
+  .campo-equipo input { font-size: 15px; padding: 10px 12px; }
+
+  /* Tablas tipo lista */
+  .tabla { overflow-x: auto; margin: 0 -20px -20px; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  th, td { padding: 9px 14px; text-align: left; vertical-align: top; }
+  th { font-size: 11px; font-weight: 600; color: var(--texto-2); border-bottom: .5px solid var(--separador-fuerte); white-space: nowrap; }
+  td { border-bottom: .5px solid var(--separador); }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:nth-child(even) td { background: rgba(116,116,128,.035); }
+  th:first-child, td:first-child { padding-left: 20px; } th:last-child, td:last-child { padding-right: 20px; }
+  tr.clic { cursor: default; } tr.clic:hover td { background: var(--azul-tinte); }
+  tr.clic:active td { background: var(--azul); color: #fff; }
+  .codigo { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; }
+  .sub { color: var(--texto-2); font-size: 12px; }
+
+  /* Etiquetas de estado (cápsulas con tinte) */
+  .insignia { display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .insignia::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .por_aprobar { background: var(--azul-tinte); color: var(--azul); }
+  .en_produccion { background: var(--naranja-tinte); color: var(--naranja); }
+  .finalizado { background: var(--verde-tinte); color: var(--verde); }
+  .borrador { background: var(--rojo-tinte); color: var(--rojo); }
+  .m-enviado { background: var(--verde-tinte); color: var(--verde); }
+  .m-simulado { background: var(--indigo-tinte); color: var(--indigo); }
+  .m-fallido { background: var(--rojo-tinte); color: var(--rojo); }
+  .m-omitido { background: var(--amarillo-tinte); color: var(--amarillo-texto); }
+
+  .error { color: var(--rojo); font-weight: 600; } .advertencia { color: var(--naranja); font-weight: 600; }
+  .resumen { padding: 11px 14px; border-radius: 10px; font-weight: 600; margin: 16px 0 0; font-size: 13px; }
+  .ok { background: var(--verde-tinte); color: var(--verde); } .mal { background: var(--rojo-tinte); color: var(--rojo); }
+  .texto-ok { color: var(--verde); font-weight: 600; }
+  .datos { display: grid; grid-template-columns: 130px 1fr; gap: 7px 12px; font-size: 13px; margin: 0; }
+  .datos dt { color: var(--texto-2); } .datos dd { margin: 0; font-weight: 500; overflow-wrap: anywhere; }
+  .tallas { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tallas span { background: var(--relleno); border-radius: 8px; padding: 5px 11px; font-size: 13px; font-variant-numeric: tabular-nums; }
+  .vacio { text-align: center; color: var(--texto-2); padding: 34px; }
+  .lectura { margin-top: 12px; font-size: 13px; text-align: left; display: grid; gap: 4px; }
+  .lectura .bien { color: var(--verde); } .lectura .aviso { color: var(--naranja); }
+  small, .nota { color: var(--texto-2); font-size: 12px; }
+  .flash { padding: 12px 16px; border-radius: var(--r); margin-bottom: 16px; font-size: 13px; background: var(--azul-tinte); color: var(--texto); border: .5px solid var(--separador); }
+  .flash.malo { background: var(--rojo-tinte); }
+
+  /* Cabecera del pedido */
+  .titulo-pedido { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .titulo-pedido h2 { margin: 0; }
+  .equipo-pedido { display: inline-flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 15px; font-weight: 600; }
+  .equipo-pedido svg { color: var(--indigo); }
+
+  /* Línea de avance */
+  .pasos { display: flex; align-items: center; margin: 20px 0 6px; }
+  .paso { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-3); white-space: nowrap; font-weight: 500; }
+  .paso .punto { width: 24px; height: 24px; border-radius: 50%; background: var(--relleno-2); display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: var(--texto-2); }
+  .paso.hecho { color: var(--texto); } .paso.hecho .punto { background: var(--verde-sis); color: #fff; }
+  .paso.actual { color: var(--texto); font-weight: 700; } .paso.actual .punto { background: var(--azul); color: #fff; box-shadow: 0 0 0 4px var(--azul-tinte); }
+  .linea { flex: 1; height: 2px; border-radius: 2px; background: var(--relleno-2); margin: 0 12px; min-width: 20px; }
+  .accion { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 16px 0 2px; }
+  .texto-msg { max-width: 420px; white-space: pre-wrap; }
+
+  /* Ingreso */
+  .ingreso { max-width: 360px; margin: 72px auto; text-align: center; padding: 28px; box-shadow: var(--sombra-alta); }
+  .ingreso .icono { width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px; }
+  .ingreso h2 { margin-bottom: 4px; }
+  .ingreso label { text-align: left; margin-top: 18px; }
+  .ingreso button { width: 100%; margin-top: 16px; padding: 9px; }
+
+  @media (max-width: 640px) {
+    header { padding: 10px 14px; gap: 12px; }
+    main { margin-top: 18px; padding: 0 12px; }
+    .tarjeta { padding: 16px; } .tabla { margin: 0 -16px -16px; }
+    .datos { grid-template-columns: 110px 1fr; }
+  }
 </style>
 </head>
 <body>
 <header>
-  <h1>Pedido Seguro · Sport Champion</h1>
+  <div class="marca"><div class="icono"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5.1 7.5-9.5V6L12 3z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></svg></div><h1>Pedido Seguro <span>· Sport Champion</span></h1></div>
   <nav>
     <button id="nav-nuevo" data-ir="#/nuevo">Nuevo pedido</button>
     <button id="nav-lista" data-ir="#/pedidos">Pedidos <span id="contador"></span></button>
@@ -115,7 +243,7 @@
   function vistaIngreso(mensaje) {
     document.querySelector('nav').hidden = true;
     document.getElementById('salir').hidden = true;
-    $vista.innerHTML = '<form class="tarjeta ingreso" id="f-ingreso"><h2>Ingresar</h2><p class="nota">Escribe la contraseña del equipo para ver y gestionar los pedidos.</p>' +
+    $vista.innerHTML = '<form class="tarjeta ingreso" id="f-ingreso"><div class="marca"><div class="icono"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5.1 7.5-9.5V6L12 3z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></svg></div></div><h2>Pedido Seguro</h2><p class="nota">Escribe la contraseña del equipo para ver y gestionar los pedidos.</p>' +
       '<label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password" required>' +
       '<div class="msg-error" id="e-clave">' + (mensaje && !/Ingresa la contraseña/.test(mensaje) ? esc(mensaje) : '') + '</div>' +
       '<button type="submit">Entrar</button></form>';
@@ -172,18 +300,18 @@
       return;
     }
     const cuenta = (e) => pedidos.filter((p) => p.estado === e).length;
-    $vista.innerHTML = '<div class="barra"><h2>Pedidos</h2><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    $vista.innerHTML = '<div class="barra"><h2 style="margin:0">Pedidos</h2><div class="herramientas">' +
       '<select id="filtro-estado" style="width:auto"><option value="activos" selected>Por aprobar y en producción (' + activos + ')</option><option value="">Todos los pedidos (' + pedidos.length + ')</option>' +
       Object.keys(ESTADOS).map((e) => '<option value="' + e + '">' + esc(ESTADOS[e]) + ' (' + cuenta(e) + ')</option>').join('') + '</select>' +
-      '<input id="buscar" placeholder="Buscar por cliente o código..." style="max-width:260px"></div></div>' +
-      '<div class="tarjeta"><table><thead><tr><th>Código</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Prendas</th><th>Estado</th></tr></thead><tbody></tbody></table></div>';
+      '<input id="buscar" type="search" placeholder="Buscar cliente, equipo o código" style="width:260px"></div></div>' +
+      '<div class="tarjeta"><div class="tabla"><table><thead><tr><th>Código</th><th>Cliente</th><th>Equipo</th><th>Fecha</th><th>Prendas</th><th>Estado</th></tr></thead><tbody></tbody></table></div></div>';
     const pintar = () => {
       const q = document.getElementById('buscar').value.trim().toLowerCase();
       const est = document.getElementById('filtro-estado').value;
       const coincideEstado = (p) => !est || (est === 'activos' ? ACTIVOS.includes(p.estado) : p.estado === est);
-      const visibles = pedidos.filter((p) => coincideEstado(p) && (!q || (p.codigo + ' ' + p.organizacion + ' ' + p.contacto).toLowerCase().includes(q)));
+      const visibles = pedidos.filter((p) => coincideEstado(p) && (!q || (p.codigo + ' ' + p.organizacion + ' ' + p.contacto + ' ' + (p.equipo || '')).toLowerCase().includes(q)));
       $vista.querySelector('tbody').innerHTML = visibles.length ? visibles.map((p) =>
-        '<tr class="clic" data-codigo="' + esc(p.codigo) + '"><td><b>' + esc(p.codigo) + '</b></td><td>' + esc(p.organizacion) + '</td><td>' + esc(p.contacto) +
+        '<tr class="clic" data-codigo="' + esc(p.codigo) + '"><td class="codigo">' + esc(p.codigo) + '</td><td>' + esc(p.organizacion) + '<div class="sub">' + esc(p.contacto) + '</div></td><td>' + (p.equipo ? esc(p.equipo) : '<span class="nota">—</span>') +
         '</td><td>' + esc(fecha(p.creadoEn)) + '</td><td>' + p.prendas + (p.errores ? ' <small class="error">· ' + p.errores + ' con error</small>' : '') +
         '</td><td>' + etiquetaEstado(p.estado) + '</td></tr>').join('') : '<tr><td colspan="6" class="vacio">' + (est === 'activos' && !q ? 'No hay pedidos por aprobar ni en producción. Elige "Todos los pedidos" para ver los demás.' : 'Ningún pedido coincide.') + '</td></tr>';
     };
@@ -211,9 +339,13 @@
       campo('email', 'Correo *', 'type="email" autocomplete="email"') +
       campo('whatsapp', 'WhatsApp (opcional)', 'type="tel" placeholder="300 123 4567"') +
       '</div><label class="check"><input type="checkbox" id="aceptaWhatsapp"> El contacto autoriza recibir por WhatsApp los avisos del pedido (por aprobar, en producción, finalizado). Por correo siempre se avisa.</label></div>' +
-      '<div class="tarjeta"><h3 style="margin-top:0">2. Listado de uniformes</h3><div class="caja" id="caja"><p>Arrastra aquí tu archivo .xlsx o .csv, o elígelo:</p><input type="file" id="archivo" name="archivo" accept=".xlsx,.csv" style="max-width:360px"><div class="msg-error" id="e-archivo"></div><div id="lectura" class="lectura"></div>' +
-      '<p class="nota">El archivo puede traer arriba los datos del cliente (Organización, Contacto, Correo, WhatsApp, Autoriza WhatsApp...) y el formulario se llena solo. Columnas de la tabla: Nombre, Número (o Dorsal) y Talla. Máximo 4 MB.</p></div></div>' +
-      '<div id="aviso"></div><button type="submit" id="enviar">Validar y crear pedido</button></form>';
+      '<div class="tarjeta"><h3 style="margin-top:0">2. Equipo y listado de uniformes</h3>' +
+      '<div class="campo-equipo"><label for="equipo">Equipo *</label><input id="equipo" name="equipo" maxlength="80" placeholder="Ej: FC Barcelona Visitante" autocomplete="off">' +
+      '<div class="ayuda-campo">Equipo y versión del uniforme de este pedido (local, visitante, alterno…).</div><div class="msg-error" id="e-equipo"></div></div>' +
+      '<div class="caja" id="caja"><svg class="icono-archivo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M12 18v-6M9.5 14.5 12 12l2.5 2.5"/></svg>' +
+      '<p style="margin:0"><b>Arrastra aquí el archivo .xlsx o .csv</b><br><span class="nota">o elígelo desde tu computador</span></p><input type="file" id="archivo" name="archivo" accept=".xlsx,.csv"><div class="msg-error" id="e-archivo"></div><div id="lectura" class="lectura"></div>' +
+      '<p class="nota" style="margin-bottom:0">El archivo puede traer arriba los datos del cliente y el equipo (Organización, Contacto, Correo, WhatsApp, Autoriza WhatsApp, Equipo…) y el formulario se llena solo. Columnas de la tabla: Nombre, Número (o Dorsal), Talla y Categoría. Máximo 4 MB.</p></div></div>' +
+      '<div id="aviso"></div><button type="submit" id="enviar" class="grande">Validar y crear pedido</button></form>';
 
     const caja = document.getElementById('caja'), archivo = document.getElementById('archivo');
     caja.addEventListener('dragover', (e) => { e.preventDefault(); caja.classList.add('sobre'); });
@@ -221,13 +353,13 @@
     caja.addEventListener('drop', (e) => { e.preventDefault(); caja.classList.remove('sobre'); archivo.files = e.dataTransfer.files; leerArchivo(); });
     archivo.addEventListener('change', leerArchivo);
     // Si la persona toca un campo, deja de considerarse "llenado por el archivo".
-    ['organizacion', 'tipo', 'nit', 'contacto', 'email', 'whatsapp', 'aceptaWhatsapp'].forEach((id) => {
+    ['organizacion', 'tipo', 'nit', 'contacto', 'email', 'whatsapp', 'aceptaWhatsapp', 'equipo'].forEach((id) => {
       const el = document.getElementById(id);
       el.addEventListener('input', () => { el.dataset.auto = '0'; el.classList.remove('auto'); });
     });
 
-    const ETIQUETAS = { organizacion: 'organización', tipo: 'tipo', nit: 'NIT', contacto: 'contacto', email: 'correo', whatsapp: 'WhatsApp', aceptaWhatsapp: 'autorización de WhatsApp' };
-    const OBLIGATORIOS = ['organizacion', 'contacto', 'email'];
+    const ETIQUETAS = { organizacion: 'organización', tipo: 'tipo', nit: 'NIT', contacto: 'contacto', email: 'correo', whatsapp: 'WhatsApp', aceptaWhatsapp: 'autorización de WhatsApp', equipo: 'equipo' };
+    const OBLIGATORIOS = ['organizacion', 'contacto', 'email', 'equipo'];
 
     async function leerArchivo() {
       const salida = document.getElementById('lectura');
@@ -265,8 +397,8 @@
       const faltan = OBLIGATORIOS.filter((k) => !document.getElementById(k).value.trim()).map((k) => ETIQUETAS[k]);
       const s = r.resumen;
       let html = '<div>' + (encontrados.length
-        ? '<span class="bien">✔ Datos del cliente leídos del archivo: <b>' + esc(encontrados.join(', ')) + '</b>.</span>'
-        : '<span class="aviso">Este archivo no trae datos del cliente: escríbelos arriba.</span>') + '</div>';
+        ? '<span class="bien">✔ Datos leídos del archivo: <b>' + esc(encontrados.join(', ')) + '</b>.</span>'
+        : '<span class="aviso">Este archivo no trae datos del cliente ni el equipo: escríbelos en el formulario.</span>') + '</div>';
       if (faltan.length) html += '<div class="aviso">Falta completar: <b>' + esc(faltan.join(', ')) + '</b>.</div>';
       html += '<div class="nota">Listado: ' + s.filasTotal + ' filas · ' + s.filasValidas + ' válidas · ' + s.filasConError + ' con error · ' + s.advertencias + ' advertencias.</div>';
       salida.innerHTML = html;
@@ -340,7 +472,7 @@
   async function vistaDetalle(codigo) {
     const p = await api('/api/pedidos/' + encodeURIComponent(codigo));
     const c = p.cliente, s = p.resumen;
-    const dato = (k, v) => '<dt>' + k + '</dt><dd>' + (v ? esc(v) : '<span class="nota">—</span>') + '</dd>';
+    const dato = (k, v) => '<dt>' + k + '</dt><dd>' + (v || v === 0 ? esc(v) : '<span class="nota">—</span>') + '</dd>';
     const errores = p.hallazgos.filter((h) => h.severidad === 'error').length;
     const tallas = Object.keys(s.curvaTallas);
     const sig = SIGUIENTE[p.estado];
@@ -349,16 +481,17 @@
     if (flash) { html += '<div class="flash' + (flash.malo ? ' malo' : '') + '" id="flash">' + esc(flash.texto) + '</div>'; flash = null; }
     html += '<div class="barra"><div><button class="sec" onclick="location.hash=\'#/pedidos\'">← Pedidos</button></div>' +
       '<button class="peligro" id="borrar">Eliminar pedido</button></div>' +
-      '<div class="tarjeta"><div class="barra" style="margin:0"><h2 style="margin:0">Pedido ' + esc(p.codigo) + '</h2>' + etiquetaEstado(p.estado) + '</div>' +
+      '<div class="tarjeta"><div class="titulo-pedido"><h2>Pedido ' + esc(p.codigo) + '</h2>' + etiquetaEstado(p.estado) + '</div>' +
+      (p.equipo ? '<div class="equipo-pedido"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 3 6l2 4 3-1v12h8V9l3 1 2-4-5-3c-.5 1.7-2 2.8-4 2.8S8.5 4.7 8 3z"/></svg>' + esc(p.equipo) + '</div>' : '') +
       '<p class="nota">Creado el ' + esc(fecha(p.creadoEn)) + ' · archivo ' + esc(p.archivo.nombre) + '</p>' +
       (p.estado === 'borrador' ? '' : lineaAvance(p.estado)) +
       '<div class="accion">' +
         (sig ? '<button class="grande" id="avanzar">' + esc(sig.texto) + '</button><span class="nota">' + esc(avisoPrevio(c)) + '</span>'
-          : p.estado === 'finalizado' ? '<b style="color:#166534">✔ Pedido finalizado</b>'
+          : p.estado === 'finalizado' ? '<span class="texto-ok">✔ Pedido finalizado</span>'
           : '<span class="error">El archivo tiene errores: no se puede avanzar hasta corregirlos.</span>') +
       '</div></div>' +
       '<div class="tarjeta"><div class="rejilla"><div><h3 style="margin-top:0">Cliente</h3><dl class="datos">' +
-      dato('Organización', c.organizacion) + dato('Tipo', c.tipo) + dato('NIT', c.nit) + dato('Contacto', c.contacto) + dato('Correo', c.email) + dato('WhatsApp', c.whatsapp) +
+      dato('Organización', c.organizacion) + dato('Equipo', p.equipo) + dato('Tipo', c.tipo) + dato('NIT', c.nit) + dato('Contacto', c.contacto) + dato('Correo', c.email) + dato('WhatsApp', c.whatsapp) +
       dato('Autoriza WhatsApp', c.aceptaWhatsapp ? 'Sí' : 'No') +
       '</dl></div><div><h3 style="margin-top:0">Resumen</h3><dl class="datos">' +
       dato('Filas del archivo', s.filasTotal) + dato('Prendas válidas', s.filasValidas) + dato('Filas con error', s.filasConError) + dato('Advertencias', s.advertencias) +
@@ -369,29 +502,29 @@
       html += '<div class="tarjeta"><div class="barra" style="margin-bottom:8px"><h3 style="margin:0">Avisos al cliente (' + p.mensajes.length + ')</h3>' +
         '<button class="sec" id="reenviar">Reenviar aviso del estado actual</button></div>';
       html += p.mensajes.length
-        ? '<table><thead><tr><th>Fecha</th><th>Canal</th><th>Por el estado</th><th>Para</th><th>Resultado</th><th>Mensaje</th></tr></thead><tbody>' +
+        ? '<div class="tabla"><table><thead><tr><th>Fecha</th><th>Canal</th><th>Por el estado</th><th>Para</th><th>Resultado</th><th>Mensaje</th></tr></thead><tbody>' +
           p.mensajes.slice().reverse().map((m) => '<tr><td>' + esc(fecha(m.fecha)) + '</td><td>' + esc(NOMBRE_CANAL[m.canal] || m.canal) + '</td><td>' + etiquetaEstado(m.paraEstado) + '</td><td>' + esc(m.para || '—') +
             '</td><td><span class="insignia m-' + esc(m.resultado) + '">' + esc(RESULTADO[m.resultado]) + '</span>' + (m.detalle && m.resultado !== 'enviado' ? '<br><small>' + esc(m.detalle) + '</small>' : '') +
-            '</td><td class="texto-msg">' + esc(m.texto) + '</td></tr>').join('') + '</tbody></table>'
+            '</td><td class="texto-msg">' + esc(m.texto) + '</td></tr>').join('') + '</tbody></table></div>'
         : '<p class="nota">Todavía no se ha enviado ningún aviso.</p>';
       html += '</div>';
     }
 
-    html += '<div class="tarjeta"><h3 style="margin-top:0">Historial de estados</h3><table><thead><tr><th>Fecha</th><th>Estado</th></tr></thead><tbody>' +
-      p.historial.slice().reverse().map((h) => '<tr><td>' + esc(fecha(h.fecha)) + '</td><td>' + etiquetaEstado(h.estado) + '</td></tr>').join('') + '</tbody></table></div>';
+    html += '<div class="tarjeta"><h3 style="margin-top:0">Historial de estados</h3><div class="tabla"><table><thead><tr><th>Fecha</th><th>Estado</th></tr></thead><tbody>' +
+      p.historial.slice().reverse().map((h) => '<tr><td>' + esc(fecha(h.fecha)) + '</td><td>' + etiquetaEstado(h.estado) + '</td></tr>').join('') + '</tbody></table></div></div>';
 
     if (tallas.length) {
       html += '<div class="tarjeta"><h3 style="margin-top:0">Curva de tallas</h3><div class="tallas">' +
         tallas.map((t) => '<span><b>' + esc(t) + '</b> × ' + esc(s.curvaTallas[t]) + '</span>').join('') + '</div></div>';
     }
     html += '<div class="tarjeta"><div class="barra" style="margin-bottom:8px"><h3 style="margin:0">Prendas (<span id="cuenta">' + p.prendas.length + '</span>)</h3>' +
-      '<input id="filtro" placeholder="Filtrar por nombre, número, talla o equipo..." style="max-width:320px"></div>' +
-      '<table><thead><tr><th>Fila Excel</th><th>Nombre a estampar</th><th>Número</th><th>Talla</th><th>Equipo</th></tr></thead><tbody id="prendas"></tbody></table></div>';
+      '<input id="filtro" type="search" placeholder="Filtrar por nombre, número, talla o categoría" style="max-width:320px"></div>' +
+      '<div class="tabla"><table><thead><tr><th>Fila Excel</th><th>Nombre a estampar</th><th>Número</th><th>Talla</th><th>Categoría</th></tr></thead><tbody id="prendas"></tbody></table></div></div>';
 
     if (p.hallazgos.length) {
-      html += '<div class="tarjeta"><h3 style="margin-top:0">Errores y advertencias</h3><table><thead><tr><th>Fila</th><th>Campo</th><th>Tipo</th><th>Detalle</th><th>Sugerencia</th></tr></thead><tbody>' +
+      html += '<div class="tarjeta"><h3 style="margin-top:0">Errores y advertencias</h3><div class="tabla"><table><thead><tr><th>Fila</th><th>Campo</th><th>Tipo</th><th>Detalle</th><th>Sugerencia</th></tr></thead><tbody>' +
         p.hallazgos.map((h) => '<tr><td>' + esc(h.fila || '—') + '</td><td>' + esc(h.campo) + '</td><td class="' + esc(h.severidad) + '">' + esc(h.severidad) + '</td><td>' + esc(h.mensaje) + '</td><td>' + esc(h.sugerencia) + '</td></tr>').join('') +
-        '</tbody></table></div>';
+        '</tbody></table></div></div>';
     }
     $vista.innerHTML = html;
 

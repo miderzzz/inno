@@ -8,7 +8,7 @@
  *   GET    /api/sesion             ¿pide contraseña? ¿ya se ingresó?
  *   POST   /api/sesion             ingresar con { clave }
  *   DELETE /api/sesion             salir
- *   POST   /api/pedidos            crea un pedido (archivo; el cliente viene en el archivo y/o el formulario)
+ *   POST   /api/pedidos            crea un pedido (archivo + equipo; cliente y equipo vienen en el archivo y/o el formulario)
  *   GET    /api/pedidos            lista de pedidos
  *   GET    /api/pedidos/:codigo    detalle de un pedido
  *   PATCH  /api/pedidos/:codigo/estado   avanza el estado y avisa por WhatsApp y correo
@@ -27,7 +27,7 @@ import {
   modoAlmacen, type EstadoPedido, type Pedido,
 } from "./almacen.js";
 import { accesoProtegido, estadoSesion, exigirSesion, ingresar, salir } from "./acceso.js";
-import { combinarCliente, validarCliente } from "./cliente.js";
+import { combinarCliente, validarCliente, validarEquipo } from "./cliente.js";
 import { ErrorArchivo, leerHojaDeCalculo } from "./lector.js";
 import { validarPedido } from "./validador.js";
 import { enviarCorreo, modoCorreo } from "./correo.js";
@@ -92,16 +92,18 @@ app.post("/api/pedidos", subida.single("archivo"), asincrono(async (req, res) =>
   try {
     const lectura = await leerHojaDeCalculo(req.file.buffer, req.file.originalname);
     // Los datos del cliente pueden venir en el archivo, en el formulario o en ambos.
-    const cliente = validarCliente(combinarCliente(lectura.datosCliente, req.body ?? {}));
-    if (!cliente.ok) {
+    const datos = combinarCliente(lectura.datosCliente, req.body ?? {});
+    const cliente = validarCliente(datos);
+    const equipo = validarEquipo(datos.equipo);
+    if (!cliente.ok || !equipo.ok) {
       res.status(400).json({
-        error: "Faltan datos del cliente: complétalos en el formulario o en el bloque superior del archivo.",
-        errores: cliente.errores,
+        error: "Faltan datos del pedido: complétalos en el formulario o en el bloque superior del archivo.",
+        errores: { ...(cliente.ok ? {} : cliente.errores), ...(equipo.ok ? {} : { equipo: equipo.error }) },
       });
       return;
     }
     const resultado = validarPedido(lectura);
-    const pedido = await crearPedido(cliente.cliente, req.file.originalname, lectura, resultado);
+    const pedido = await crearPedido(cliente.cliente, req.file.originalname, lectura, resultado, equipo.equipo);
     res.status(201).json(await notificar(pedido, pedido.estado)); // por_aprobar avisa; borrador no
   } catch (e) {
     if (e instanceof ErrorArchivo) {

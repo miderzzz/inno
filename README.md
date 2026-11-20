@@ -76,29 +76,32 @@ Dos reglas de Meta que debes conocer:
 - Con una cuenta de prueba, Meta solo permite escribir a los números que registres como destinatarios de prueba.
 
 ## Formato del archivo (CSV o Excel)
-Arriba van los datos del cliente (etiqueta y valor), luego una fila en blanco y después la tabla:
+Arriba van los datos del cliente y el equipo del pedido (etiqueta y valor), luego una fila en blanco y después la tabla:
 
 ```text
 Organización;Colegio San José
 Tipo;colegio
 NIT;900.123.456-7
 Contacto;Ana Ruiz
-Correo;ana.ruiz@sanjose.edu.co
+Correo;ana.ruiz@example.com
 WhatsApp;300 123 4567
 Autoriza WhatsApp;Sí
+Equipo;FC Barcelona Visitante
 
-Nombre;Número;Talla;Equipo
+Nombre;Número;Talla;Categoría
 Juan Pérez;10;M;Sub-15
 Andrés Gómez;7;L;Sub-15
 ```
 
-- Obligatorios: **Organización**, **Contacto** y **Correo**. Opcionales: Tipo, NIT, WhatsApp y Autoriza WhatsApp (Sí/No). Sin autorización no se envían avisos.
+- Obligatorios: **Organización**, **Contacto**, **Correo** y **Equipo** (equipo y versión del uniforme de todo el pedido, por ejemplo *FC Barcelona Visitante*; también se acepta la etiqueta *Uniforme*). Opcionales: Tipo, NIT, WhatsApp y Autoriza WhatsApp (Sí/No). Sin autorización no se envían avisos.
 - Al elegir el archivo, el formulario se llena solo. Lo que escribas a mano en el formulario manda sobre el archivo.
 - También se entienden etiquetas como Cliente, Colegio, Club, Persona de contacto, Correo electrónico, E-mail o Celular.
 - El separador puede ser `;` (Excel en español), `,` o tabulador. Si el archivo no trae el bloque, se escriben los datos en el formulario.
-- La tabla necesita las columnas Nombre, Número (o Dorsal) y Talla. Equipo es opcional.
+- La tabla necesita las columnas Nombre, Número (o Dorsal) y Talla. Categoría (o Equipo) es opcional: agrupa a los jugadores (Sub-15, Sub-17…) y un dorsal no se puede repetir dentro de la misma categoría.
 
 ## Ejemplos incluidos (`ejemplos/`)
+Los correos de los ejemplos usan el dominio reservado `example.com`, así que una prueba nunca le escribe a una persona real.
+
 | Archivo | Para qué sirve |
 | --- | --- |
 | `plantilla_pedido.xlsx` / `.csv` | Plantilla vacía para entregar a los clientes (el Excel trae listas desplegables de tipo y talla) |
@@ -106,7 +109,8 @@ Andrés Gómez;7;L;Sub-15
 | `pedido_colegio_sanjose.csv` | CSV con `;` y datos del cliente, sin errores |
 | `pedido_club_tigres.csv` | CSV con `,`, otras etiquetas (Cliente, Celular) y tallas escritas distinto |
 | `pedido_con_errores.xlsx` / `.csv` | Datos del cliente completos y 7 filas con errores de nombre, dorsal y talla |
-| `pedido_sin_datos_cliente.csv` | No trae datos del cliente: hay que escribirlos en el formulario |
+| `pedido_fc_barcelona_visitante.csv` / `.xlsx` | Pedido del equipo **FC Barcelona Visitante**: 8 prendas sin errores, dos categorías |
+| `pedido_sin_datos_cliente.csv` | No trae datos del cliente ni el equipo: hay que escribirlos en el formulario |
 
 ## Estructura
 | Archivo | Qué hace |
@@ -157,7 +161,7 @@ pueden pesar hasta 4 MB (límite de Vercel). Para usar la misma base de datos de
 | Método y ruta | Qué hace |
 | --- | --- |
 | `GET/POST/DELETE /api/sesion` | Estado de la sesión, ingresar con `{"clave":"..."}`, salir. Con `APP_CLAVE` el resto de `/api` exige haber ingresado |
-| `POST /api/pedidos` | Crea un pedido. Solo el archivo en `archivo` es obligatorio: el cliente se toma del bloque del archivo, y los campos `organizacion`, `tipo`, `nit`, `contacto`, `email`, `whatsapp` del formulario completan o corrigen |
+| `POST /api/pedidos` | Crea un pedido. Va el archivo en `archivo`; el cliente y el equipo se toman del bloque del archivo, y los campos `organizacion`, `tipo`, `nit`, `contacto`, `email`, `whatsapp`, `equipo` del formulario completan o corrigen. El equipo es obligatorio |
 | `GET /api/pedidos` | Lista de pedidos, los más recientes primero |
 | `GET /api/pedidos/:codigo` | Detalle de un pedido (con historial y avisos) |
 | `PATCH /api/pedidos/:codigo/estado` | Avanza el estado (`{"estado":"en_produccion"}`) y avisa por correo y WhatsApp |

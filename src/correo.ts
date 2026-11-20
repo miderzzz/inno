@@ -64,6 +64,7 @@ export function contenidoCorreo(p: Pedido, estado: EstadoPedido): { asunto: stri
   const filas: [string, string][] = [
     ["Pedido", p.codigo],
     ["Cliente", p.cliente.organizacion],
+    ...(p.equipo ? [["Equipo", p.equipo] as [string, string]] : []),
     ["Prendas", String(p.prendas.length)],
     ["Tallas", tallas],
     ["Estado", ETIQUETA_ESTADO[estado]],

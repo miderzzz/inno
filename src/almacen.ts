@@ -56,6 +56,7 @@ export interface Pedido {
   historial: CambioEstado[];
   mensajes: Aviso[];
   cliente: Cliente;
+  equipo: string; // equipo y versión del uniforme, p. ej. "FC Barcelona Visitante" ("" en pedidos antiguos)
   archivo: { nombre: string; filasTotal: number };
   mapaColumnas: ResultadoLectura["mapaColumnas"];
   resumen: ResultadoValidacion["resumen"];
@@ -69,6 +70,7 @@ export interface PedidoResumen {
   estado: EstadoPedido;
   organizacion: string;
   contacto: string;
+  equipo: string;
   prendas: number;
   errores: number;
 }
@@ -99,6 +101,7 @@ function migrar(p: Pedido): Pedido {
   p.mensajes ??= [];
   for (const m of p.mensajes) m.canal ??= "whatsapp"; // las versiones anteriores solo avisaban por WhatsApp
   p.cliente.aceptaWhatsapp ??= false;
+  p.equipo ??= "";
   return p;
 }
 
@@ -108,6 +111,7 @@ const resumir = (p: Pedido): PedidoResumen => ({
   estado: p.estado,
   organizacion: p.cliente.organizacion,
   contacto: p.cliente.contacto,
+  equipo: p.equipo ?? "",
   prendas: p.prendas.length,
   errores: p.hallazgos.filter((h) => h.severidad === "error").length,
 });
@@ -234,10 +238,11 @@ export function motorPostgres(db: ClienteSql): Motor {
     async listar() {
       await preparar();
       const { rows } = await db.query<{
-        codigo: string; creado_en: Date | string; estado: EstadoPedido; organizacion: string; contacto: string; prendas: number | string; errores: number | string;
+        codigo: string; creado_en: Date | string; estado: EstadoPedido; organizacion: string; contacto: string; equipo: string | null; prendas: number | string; errores: number | string;
       }>(`SELECT codigo, creado_en, estado,
                  datos->'cliente'->>'organizacion' AS organizacion,
                  datos->'cliente'->>'contacto' AS contacto,
+                 datos->>'equipo' AS equipo,
                  jsonb_array_length(COALESCE(datos->'prendas', '[]'::jsonb)) AS prendas,
                  (SELECT count(*) FROM jsonb_array_elements(COALESCE(datos->'hallazgos', '[]'::jsonb)) h WHERE h->>'severidad' = 'error') AS errores
             FROM app_pedidos ORDER BY numero DESC`);
@@ -247,6 +252,7 @@ export function motorPostgres(db: ClienteSql): Motor {
         estado: r.estado,
         organizacion: r.organizacion,
         contacto: r.contacto,
+        equipo: r.equipo ?? "",
         prendas: Number(r.prendas),
         errores: Number(r.errores),
       }));
@@ -302,6 +308,7 @@ export async function crearPedido(
   nombreArchivo: string,
   lectura: ResultadoLectura,
   r: ResultadoValidacion,
+  equipo = "",
 ): Promise<Pedido> {
   const ahora = new Date().toISOString();
   const estado: EstadoPedido = r.valido ? "por_aprobar" : "borrador";
@@ -312,6 +319,7 @@ export async function crearPedido(
     historial: [{ estado, fecha: ahora }],
     mensajes: [],
     cliente,
+    equipo,
     archivo: { nombre: nombreArchivo, filasTotal: lectura.filas.length },
     mapaColumnas: lectura.mapaColumnas,
     resumen: r.resumen,
