@@ -27,17 +27,17 @@ try {
       `${r.resumen.filasConError} con error · ${r.resumen.advertencias} advertencias`,
   );
   console.log(`Curva de tallas: ${JSON.stringify(r.resumen.curvaTallas)}`);
-  console.log(r.valido ? "\n✅ Pedido listo para cotizar\n" : "\n❌ Corrige los errores para continuar\n");
+  console.log(r.valido ? "\nPedido listo para cotizar\n" : "\nCorrige los errores para continuar\n");
 
   for (const h of r.hallazgos) {
-    const icono = h.severidad === "error" ? "✖" : "⚠";
-    const sug = h.sugerencia ? `  → sugerencia: ${h.sugerencia}` : "";
+    const icono = h.severidad === "error" ? "ERROR" : "AVISO";
+    const sug = h.sugerencia ? `  - sugerencia: ${h.sugerencia}` : "";
     console.log(`${icono} Fila ${String(h.fila).padStart(3)} [${h.campo}] ${h.mensaje}${sug}`);
   }
   process.exit(r.valido ? 0 : 2);
 } catch (e) {
   if (e instanceof ErrorArchivo) {
-    console.error(`❌ ${e.message}`);
+    console.error(`Error: ${e.message}`);
     process.exit(1);
   }
   throw e;

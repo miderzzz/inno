@@ -40,6 +40,7 @@
     }
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Helvetica Neue", "Segoe UI", system-ui, sans-serif;
@@ -55,13 +56,9 @@
     -webkit-backdrop-filter: saturate(180%) blur(20px); backdrop-filter: saturate(180%) blur(20px);
   }
   .marca { display: flex; align-items: center; gap: 10px; }
-  .marca .icono {
-    width: 30px; height: 30px; border-radius: 8px; display: grid; place-items: center; color: #fff;
-    background: linear-gradient(160deg, #3ea0ff 0%, #007aff 45%, #5856d6 100%);
-    box-shadow: inset 0 .5px 0 rgba(255,255,255,.45), 0 1px 3px rgba(0,0,0,.18);
-  }
-  .marca h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: -.01em; }
-  .marca h1 span { color: var(--texto-2); font-weight: 500; }
+  .logo { height: 36px; width: auto; display: block; }
+  .marca .divisor { width: .5px; height: 22px; background: var(--separador-fuerte); }
+  .marca h1 { font-size: 14px; font-weight: 500; margin: 0; color: var(--texto-2); letter-spacing: -.01em; }
 
   /* Navegación como control segmentado */
   nav { display: inline-flex; gap: 2px; padding: 2px; border-radius: 9px; background: var(--relleno-2); }
@@ -183,9 +180,11 @@
   .texto-msg { max-width: 420px; white-space: pre-wrap; }
 
   /* Ingreso */
-  .ingreso { max-width: 360px; margin: 72px auto; text-align: center; padding: 28px; box-shadow: var(--sombra-alta); }
-  .ingreso .icono { width: 52px; height: 52px; border-radius: 14px; margin: 0 auto 14px; }
-  .ingreso h2 { margin-bottom: 4px; }
+  .ingreso { max-width: 380px; margin: 48px auto; text-align: center; padding: 0 0 28px; overflow: hidden; box-shadow: var(--sombra-alta); }
+  .cuerpo-ingreso { padding: 0 28px; }
+  .ingreso .guardian { display: block; width: 100%; height: 230px; object-fit: cover; object-position: center 30%; background: #000; margin: 0 0 20px; }
+  .ingreso .logo-ingreso { height: 44px; margin: 0 auto 6px; }
+  .ingreso h2 { margin-bottom: 4px; font-size: 18px; }
   .ingreso label { text-align: left; margin-top: 18px; }
   .ingreso button { width: 100%; margin-top: 16px; padding: 9px; }
 
@@ -199,7 +198,7 @@
 </head>
 <body>
 <header>
-  <div class="marca"><div class="icono"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5.1 7.5-9.5V6L12 3z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></svg></div><h1>Pedido Seguro <span>· Sport Champion</span></h1></div>
+  <div class="marca"><picture><source srcset="/img/logo-champions-blanco.png" media="(prefers-color-scheme: dark)"><img src="/img/logo-champions.png" alt="Champions Sport" class="logo"></picture><span class="divisor"></span><h1>Pedido Seguro</h1></div>
   <nav>
     <button id="nav-nuevo" data-ir="#/nuevo">Nuevo pedido</button>
     <button id="nav-lista" data-ir="#/pedidos">Pedidos <span id="contador"></span></button>
@@ -218,8 +217,8 @@
   const ESTADOS = { borrador: 'Borrador (con errores)', por_aprobar: 'Por aprobar', en_produccion: 'En producción', finalizado: 'Finalizado' };
   const PASOS = ['por_aprobar', 'en_produccion', 'finalizado'];
   const SIGUIENTE = {
-    por_aprobar: { estado: 'en_produccion', texto: 'Aprobar y pasar a producción →' },
-    en_produccion: { estado: 'finalizado', texto: 'Marcar como finalizado →' },
+    por_aprobar: { estado: 'en_produccion', texto: 'Aprobar y pasar a producción' },
+    en_produccion: { estado: 'finalizado', texto: 'Marcar como finalizado' },
   };
   const RESULTADO = { enviado: 'Enviado', simulado: 'Simulado', fallido: 'Fallido', omitido: 'No enviado' };
   const etiquetaEstado = (e) => '<span class="insignia ' + esc(e) + '">' + esc(ESTADOS[e] || e) + '</span>';
@@ -243,10 +242,10 @@
   function vistaIngreso(mensaje) {
     document.querySelector('nav').hidden = true;
     document.getElementById('salir').hidden = true;
-    $vista.innerHTML = '<form class="tarjeta ingreso" id="f-ingreso"><div class="marca"><div class="icono"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4.5 6v5.5c0 4.4 3.2 8.2 7.5 9.5 4.3-1.3 7.5-5.1 7.5-9.5V6L12 3z"/><path d="m8.8 12 2.2 2.2 4.3-4.4"/></svg></div></div><h2>Pedido Seguro</h2><p class="nota">Escribe la contraseña del equipo para ver y gestionar los pedidos.</p>' +
+    $vista.innerHTML = '<form class="tarjeta ingreso" id="f-ingreso"><img src="/img/guardian.jpg" alt="" class="guardian"><div class="cuerpo-ingreso"><picture><source srcset="/img/logo-champions-blanco.png" media="(prefers-color-scheme: dark)"><img src="/img/logo-champions.png" alt="Champions Sport" class="logo logo-ingreso"></picture><h2>Pedido Seguro</h2><p class="nota">Escribe la contraseña del equipo para ver y gestionar los pedidos.</p>' +
       '<label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password" required>' +
       '<div class="msg-error" id="e-clave">' + (mensaje && !/Ingresa la contraseña/.test(mensaje) ? esc(mensaje) : '') + '</div>' +
-      '<button type="submit">Entrar</button></form>';
+      '<button type="submit">Entrar</button></div></form>';
     const f = document.getElementById('f-ingreso');
     document.getElementById('clave').focus();
     f.addEventListener('submit', async (e) => {
@@ -276,6 +275,7 @@
   // ---------- Navegación por hash, así F5 conserva la pantalla ----------
   async function ruta() {
     const h = location.hash || '#/pedidos';
+    window.scrollTo(0, 0);
     document.getElementById('nav-nuevo').classList.toggle('activo', h === '#/nuevo');
     document.getElementById('nav-lista').classList.toggle('activo', h === '#/pedidos');
     try {
@@ -397,7 +397,7 @@
       const faltan = OBLIGATORIOS.filter((k) => !document.getElementById(k).value.trim()).map((k) => ETIQUETAS[k]);
       const s = r.resumen;
       let html = '<div>' + (encontrados.length
-        ? '<span class="bien">✔ Datos leídos del archivo: <b>' + esc(encontrados.join(', ')) + '</b>.</span>'
+        ? '<span class="bien">Datos leídos del archivo: <b>' + esc(encontrados.join(', ')) + '</b>.</span>'
         : '<span class="aviso">Este archivo no trae datos del cliente ni el equipo: escríbelos en el formulario.</span>') + '</div>';
       if (faltan.length) html += '<div class="aviso">Falta completar: <b>' + esc(faltan.join(', ')) + '</b>.</div>';
       html += '<div class="nota">Listado: ' + s.filasTotal + ' filas · ' + s.filasValidas + ' válidas · ' + s.filasConError + ' con error · ' + s.advertencias + ' advertencias.</div>';
@@ -465,7 +465,7 @@
   function lineaAvance(estado) {
     const idx = estado === 'finalizado' ? 3 : PASOS.indexOf(estado);
     return '<div class="pasos">' + PASOS.map((e, i) =>
-      '<div class="paso ' + (idx < 0 ? '' : i < idx ? 'hecho' : i === idx ? 'actual' : '') + '"><span class="punto">' + (i < idx ? '✔' : i + 1) + '</span>' + esc(ESTADOS[e]) + '</div>'
+      '<div class="paso ' + (idx < 0 ? '' : i < idx ? 'hecho' : i === idx ? 'actual' : '') + '"><span class="punto">' + (i < idx ? '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2.5 6.2 2.3 2.3 4.7-4.9"/></svg>' : i + 1) + '</span>' + esc(ESTADOS[e]) + '</div>'
     ).join('<div class="linea"></div>') + '</div>';
   }
 
@@ -479,7 +479,7 @@
 
     let html = '';
     if (flash) { html += '<div class="flash' + (flash.malo ? ' malo' : '') + '" id="flash">' + esc(flash.texto) + '</div>'; flash = null; }
-    html += '<div class="barra"><div><button class="sec" onclick="location.hash=\'#/pedidos\'">← Pedidos</button></div>' +
+    html += '<div class="barra"><div><button class="sec" onclick="location.hash=\'#/pedidos\'">Volver a pedidos</button></div>' +
       '<button class="peligro" id="borrar">Eliminar pedido</button></div>' +
       '<div class="tarjeta"><div class="titulo-pedido"><h2>Pedido ' + esc(p.codigo) + '</h2>' + etiquetaEstado(p.estado) + '</div>' +
       (p.equipo ? '<div class="equipo-pedido"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M8 3 3 6l2 4 3-1v12h8V9l3 1 2-4-5-3c-.5 1.7-2 2.8-4 2.8S8.5 4.7 8 3z"/></svg>' + esc(p.equipo) + '</div>' : '') +
@@ -487,7 +487,7 @@
       (p.estado === 'borrador' ? '' : lineaAvance(p.estado)) +
       '<div class="accion">' +
         (sig ? '<button class="grande" id="avanzar">' + esc(sig.texto) + '</button><span class="nota">' + esc(avisoPrevio(c)) + '</span>'
-          : p.estado === 'finalizado' ? '<span class="texto-ok">✔ Pedido finalizado</span>'
+          : p.estado === 'finalizado' ? '<span class="texto-ok">Pedido finalizado</span>'
           : '<span class="error">El archivo tiene errores: no se puede avanzar hasta corregirlos.</span>') +
       '</div></div>' +
       '<div class="tarjeta"><div class="rejilla"><div><h3 style="margin-top:0">Cliente</h3><dl class="datos">' +

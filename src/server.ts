@@ -44,11 +44,12 @@ const subida = multer({
   fileFilter: (_req, file, cb) => cb(null, /\.(xlsx|csv)$/i.test(file.originalname)),
 });
 
-/** Busca public/index.html (en Vercel, además, la sirve directamente su CDN). */
+/** Carpeta public/ (página e imágenes). En Vercel la sirve directamente su CDN. */
+const DIR_PUBLICO = [join(process.cwd(), "public"), fileURLToPath(new URL("../public", import.meta.url))].find((d) =>
+  existsSync(join(d, "index.html")),
+);
 function leerPagina(): string | null {
-  const candidatos = [join(process.cwd(), "public", "index.html"), fileURLToPath(new URL("../public/index.html", import.meta.url))];
-  const ruta = candidatos.find((r) => existsSync(r));
-  return ruta ? readFileSync(ruta, "utf8") : null;
+  return DIR_PUBLICO ? readFileSync(join(DIR_PUBLICO, "index.html"), "utf8") : null;
 }
 let pagina: string | null = null;
 const MSG_ARCHIVO = `Adjunta un archivo .xlsx o .csv de máximo ${MAX_MB} MB en el campo "archivo".`;
@@ -63,6 +64,7 @@ const asincrono =
 const app = express();
 app.set("trust proxy", true);
 app.use(express.json());
+if (DIR_PUBLICO) app.use("/img", express.static(join(DIR_PUBLICO, "img"), { maxAge: "1d" })); // logo e imágenes (en el computador)
 
 /** Avisa por WhatsApp y por correo, deja ambos intentos registrados en el pedido y lo devuelve al día. */
 async function notificar(pedido: Pedido, estado: EstadoPedido): Promise<Pedido> {
