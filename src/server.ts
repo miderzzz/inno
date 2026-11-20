@@ -66,6 +66,9 @@ const asincrono =
 const app = express();
 app.set("trust proxy", true);
 app.use(express.json());
+app.get("/favicon.ico", (_req, res) => {
+  res.status(204).end(); // la app no usa favicon
+});
 app.get("/img/:nombre", (req, res) => {
   const nombre = String(req.params.nombre);
   const enDisco = DIR_PUBLICO && !nombre.includes("..") ? join(DIR_PUBLICO, "img", nombre) : null;
