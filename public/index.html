@@ -13,8 +13,6 @@
   nav { display: flex; gap: 8px; }
   nav button { background: none; color: #333; border: 1px solid transparent; }
   nav button.activo { background: #eff6ff; color: var(--azul); border-color: #bfdbfe; font-weight: 600; }
-  #modo { padding: 8px 24px; font-size: 13px; }
-  #modo.simulado { background: #fef9c3; color: #854d0e; } #modo.real { background: #dcfce7; color: #166534; }
   main { max-width: 980px; margin: 24px auto; padding: 0 16px; }
   h2 { font-size: 18px; margin: 0 0 12px; }
   h3 { font-size: 15px; margin: 24px 0 8px; }
@@ -65,6 +63,10 @@
   .linea { flex: 1; height: 2px; background: #ddd; margin: 0 10px; min-width: 20px; }
   .accion { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin: 14px 0 4px; }
   .texto-msg { max-width: 420px; white-space: pre-wrap; }
+  #salir { margin-left: auto; }
+  .ingreso { max-width: 380px; margin: 60px auto; }
+  .ingreso h2 { margin-bottom: 6px; }
+  .ingreso button { width: 100%; margin-top: 14px; }
 </style>
 </head>
 <body>
@@ -74,8 +76,8 @@
     <button id="nav-nuevo" data-ir="#/nuevo">Nuevo pedido</button>
     <button id="nav-lista" data-ir="#/pedidos">Pedidos <span id="contador"></span></button>
   </nav>
+  <button id="salir" class="sec" hidden>Salir</button>
 </header>
-<div id="modo"></div>
 <main id="vista"></main>
 
 <script>
@@ -101,19 +103,47 @@
   async function api(url, opciones) {
     const r = await fetch(url, opciones);
     const cuerpo = r.status === 204 ? null : await r.json().catch(() => ({}));
+    if ((r.status === 401 || r.status === 503) && cuerpo && cuerpo.login) {
+      vistaIngreso(cuerpo.error);
+      throw Object.assign(new Error(cuerpo.error), { ingreso: true });
+    }
     if (!r.ok) throw Object.assign(new Error((cuerpo && cuerpo.error) || 'Error del servidor'), { detalle: cuerpo });
     return cuerpo;
   }
 
-  // Aviso arriba: ¿los avisos salen de verdad o solo se simulan?
-  api('/api/canales').then((c) => {
-    const el = document.getElementById('modo');
-    const reales = [c.correo === 'real' && 'correo', c.whatsapp === 'real' && 'WhatsApp'].filter(Boolean);
-    const simulados = [c.correo !== 'real' && 'correo', c.whatsapp !== 'real' && 'WhatsApp'].filter(Boolean);
-    el.className = simulados.length ? 'simulado' : 'real';
-    el.textContent = (reales.length ? 'Avisos reales por ' + reales.join(' y ') + '. ' : '') +
-      (simulados.length ? 'En modo simulación (se registran pero no salen): ' + simulados.join(' y ') + '. Para envíos reales configura las credenciales (ver README).' : '');
-  }).catch(() => {});
+  // ---------- Ingreso con contraseña ----------
+  function vistaIngreso(mensaje) {
+    document.querySelector('nav').hidden = true;
+    document.getElementById('salir').hidden = true;
+    $vista.innerHTML = '<form class="tarjeta ingreso" id="f-ingreso"><h2>Ingresar</h2><p class="nota">Escribe la contraseña del equipo para ver y gestionar los pedidos.</p>' +
+      '<label for="clave">Contraseña</label><input id="clave" type="password" autocomplete="current-password" required>' +
+      '<div class="msg-error" id="e-clave">' + (mensaje && !/Ingresa la contraseña/.test(mensaje) ? esc(mensaje) : '') + '</div>' +
+      '<button type="submit">Entrar</button></form>';
+    const f = document.getElementById('f-ingreso');
+    document.getElementById('clave').focus();
+    f.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const boton = f.querySelector('button');
+      boton.disabled = true;
+      const r = await fetch('/api/sesion', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ clave: document.getElementById('clave').value }) });
+      const cuerpo = await r.json().catch(() => ({}));
+      boton.disabled = false;
+      if (!r.ok) {
+        document.getElementById('e-clave').textContent = cuerpo.error || 'No se pudo ingresar.';
+        document.getElementById('clave').select();
+        return;
+      }
+      document.querySelector('nav').hidden = false;
+      document.getElementById('salir').hidden = false;
+      ruta();
+    });
+  }
+
+  document.getElementById('salir').addEventListener('click', async () => {
+    await fetch('/api/sesion', { method: 'DELETE' });
+    vistaIngreso();
+  });
+
 
   // ---------- Navegación por hash, así F5 conserva la pantalla ----------
   async function ruta() {
@@ -125,6 +155,7 @@
       else if (h.startsWith('#/pedido/')) await vistaDetalle(decodeURIComponent(h.slice(9)));
       else await vistaLista();
     } catch (e) {
+      if (e.ingreso) return; // ya se muestra la pantalla de ingreso
       $vista.innerHTML = '<div class="tarjeta"><p class="error">' + esc(e.message) + '</p><button class="sec" onclick="location.hash=\'#/pedidos\'">Volver a pedidos</button></div>';
     }
   }
@@ -133,25 +164,28 @@
   // ---------- Lista de pedidos ----------
   async function vistaLista() {
     const pedidos = await api('/api/pedidos');
-    document.getElementById('contador').textContent = pedidos.length ? '(' + pedidos.length + ')' : '';
+    const ACTIVOS = ['por_aprobar', 'en_produccion'];
+    const activos = pedidos.filter((p) => ACTIVOS.includes(p.estado)).length;
+    document.getElementById('contador').textContent = activos ? '(' + activos + ')' : '';
     if (!pedidos.length) {
       $vista.innerHTML = '<div class="tarjeta vacio"><p>Aún no hay pedidos.</p><button onclick="location.hash=\'#/nuevo\'">Crear el primer pedido</button></div>';
       return;
     }
     const cuenta = (e) => pedidos.filter((p) => p.estado === e).length;
     $vista.innerHTML = '<div class="barra"><h2>Pedidos</h2><div style="display:flex;gap:8px;flex-wrap:wrap">' +
-      '<select id="filtro-estado" style="width:auto"><option value="">Todos los estados</option>' +
+      '<select id="filtro-estado" style="width:auto"><option value="activos" selected>Por aprobar y en producción (' + activos + ')</option><option value="">Todos los pedidos (' + pedidos.length + ')</option>' +
       Object.keys(ESTADOS).map((e) => '<option value="' + e + '">' + esc(ESTADOS[e]) + ' (' + cuenta(e) + ')</option>').join('') + '</select>' +
       '<input id="buscar" placeholder="Buscar por cliente o código..." style="max-width:260px"></div></div>' +
       '<div class="tarjeta"><table><thead><tr><th>Código</th><th>Cliente</th><th>Contacto</th><th>Fecha</th><th>Prendas</th><th>Estado</th></tr></thead><tbody></tbody></table></div>';
     const pintar = () => {
       const q = document.getElementById('buscar').value.trim().toLowerCase();
       const est = document.getElementById('filtro-estado').value;
-      const visibles = pedidos.filter((p) => (!est || p.estado === est) && (!q || (p.codigo + ' ' + p.organizacion + ' ' + p.contacto).toLowerCase().includes(q)));
+      const coincideEstado = (p) => !est || (est === 'activos' ? ACTIVOS.includes(p.estado) : p.estado === est);
+      const visibles = pedidos.filter((p) => coincideEstado(p) && (!q || (p.codigo + ' ' + p.organizacion + ' ' + p.contacto).toLowerCase().includes(q)));
       $vista.querySelector('tbody').innerHTML = visibles.length ? visibles.map((p) =>
         '<tr class="clic" data-codigo="' + esc(p.codigo) + '"><td><b>' + esc(p.codigo) + '</b></td><td>' + esc(p.organizacion) + '</td><td>' + esc(p.contacto) +
         '</td><td>' + esc(fecha(p.creadoEn)) + '</td><td>' + p.prendas + (p.errores ? ' <small class="error">· ' + p.errores + ' con error</small>' : '') +
-        '</td><td>' + etiquetaEstado(p.estado) + '</td></tr>').join('') : '<tr><td colspan="6" class="vacio">Ningún pedido coincide.</td></tr>';
+        '</td><td>' + etiquetaEstado(p.estado) + '</td></tr>').join('') : '<tr><td colspan="6" class="vacio">' + (est === 'activos' && !q ? 'No hay pedidos por aprobar ni en producción. Elige "Todos los pedidos" para ver los demás.' : 'Ningún pedido coincide.') + '</td></tr>';
     };
     pintar();
     document.getElementById('buscar').addEventListener('input', pintar);
@@ -178,7 +212,7 @@
       campo('whatsapp', 'WhatsApp (opcional)', 'type="tel" placeholder="300 123 4567"') +
       '</div><label class="check"><input type="checkbox" id="aceptaWhatsapp"> El contacto autoriza recibir por WhatsApp los avisos del pedido (por aprobar, en producción, finalizado). Por correo siempre se avisa.</label></div>' +
       '<div class="tarjeta"><h3 style="margin-top:0">2. Listado de uniformes</h3><div class="caja" id="caja"><p>Arrastra aquí tu archivo .xlsx o .csv, o elígelo:</p><input type="file" id="archivo" name="archivo" accept=".xlsx,.csv" style="max-width:360px"><div class="msg-error" id="e-archivo"></div><div id="lectura" class="lectura"></div>' +
-      '<p class="nota">El archivo puede traer arriba los datos del cliente (Organización, Contacto, Correo, WhatsApp, Autoriza WhatsApp...) y el formulario se llena solo. Columnas de la tabla: Nombre, Número (o Dorsal) y Talla. Máximo 5 MB.</p></div></div>' +
+      '<p class="nota">El archivo puede traer arriba los datos del cliente (Organización, Contacto, Correo, WhatsApp, Autoriza WhatsApp...) y el formulario se llena solo. Columnas de la tabla: Nombre, Número (o Dorsal) y Talla. Máximo 4 MB.</p></div></div>' +
       '<div id="aviso"></div><button type="submit" id="enviar">Validar y crear pedido</button></form>';
 
     const caja = document.getElementById('caja'), archivo = document.getElementById('archivo');
@@ -409,8 +443,18 @@
   }
 
   // El contador de la barra se actualiza en cada cambio de pantalla.
-  window.addEventListener('hashchange', () => api('/api/pedidos').then((l) => { document.getElementById('contador').textContent = l.length ? '(' + l.length + ')' : ''; }).catch(() => {}));
-  ruta();
+  // Cuenta solo los pedidos por aprobar y en producción.
+  window.addEventListener('hashchange', () => api('/api/pedidos').then((l) => {
+    const n = l.filter((p) => p.estado === 'por_aprobar' || p.estado === 'en_produccion').length;
+    document.getElementById('contador').textContent = n ? '(' + n + ')' : '';
+  }).catch(() => {}));
+  // Al abrir: si hay contraseña y no se ha ingresado, primero la pantalla de ingreso.
+  fetch('/api/sesion').then((r) => r.json()).then((s) => {
+    if (s.sinConfigurar) return vistaIngreso('La app está bloqueada: falta configurar APP_CLAVE en Vercel.');
+    document.getElementById('salir').hidden = !s.requiere;
+    if (s.requiere && !s.activa) return vistaIngreso();
+    ruta();
+  }).catch(() => ruta());
 </script>
 </body>
 </html>

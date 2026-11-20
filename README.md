@@ -13,7 +13,8 @@ dorsales para pedidos masivos de uniformes. Incluye una pantalla web de carga.
 5. Pulsa **Aprobar y pasar a producción** y luego **Marcar como finalizado**: en cada cambio de
    estado el cliente recibe un aviso por correo y por WhatsApp (ver más abajo).
 6. Se abre el detalle del pedido: de quién es, su estado, la curva de tallas, las prendas y los errores.
-   En **Pedidos** ves la lista de todos, con buscador. Los pedidos se guardan en `data/pedidos.json`.
+   En **Pedidos** ves la lista de todos, con buscador. En el computador los pedidos se guardan en `data/pedidos.json`;
+   en Vercel, en la base de datos (ver "Publicar en Vercel").
 
 ## Inicio rápido desde la terminal
 ```bash
@@ -117,15 +118,45 @@ Andrés Gómez;7;L;Sub-15
 | `src/server.ts` | Pantalla web y API de pedidos (crear, listar, consultar, cambiar estado, reenviar aviso, eliminar) |
 | `src/correo.ts` | Correo de cada estado (texto y HTML) y envío por SMTP (real o simulado) |
 | `src/whatsapp.ts` | Textos de los avisos y envío por la API de WhatsApp (real o simulado) |
-| `src/public/index.html` | Pantalla: nuevo pedido, lista y detalle |
+| `public/index.html` | Pantalla: ingreso, nuevo pedido, lista y detalle |
+| `src/acceso.ts` | Contraseña de acceso (`APP_CLAVE`) y sesión con cookie firmada |
 | `src/cliente.ts` | Validación de los datos del cliente (organización, contacto, correo, WhatsApp) |
-| `src/almacen.ts` | Guarda los pedidos, su historial de estados y los avisos en `data/pedidos.json` (en producción: PostgreSQL) |
+| `src/almacen.ts` | Guarda los pedidos, su historial y los avisos: en PostgreSQL si existe `DATABASE_URL` (tabla `app_pedidos`, se crea sola) o en `data/pedidos.json` |
 | `src/cli.ts` | Validación desde la terminal |
 | `schema.sql` | Esquema PostgreSQL de la plataforma |
+
+## Publicar en Vercel
+
+La app corre en Vercel sin cambios de código (`src/server.ts` exporta la app de Express y `public/index.html`
+lo sirve el CDN de Vercel). Necesita:
+
+1. **Repositorio en GitHub** (privado si `correo-config.bat` lleva la contraseña de Gmail).
+2. **Proyecto en Vercel:** https://vercel.com/new → importar el repositorio → Deploy (Vercel detecta Express solo;
+   no se configura comando de build ni carpeta de salida).
+3. **Base de datos:** en el proyecto, pestaña **Storage** → **Neon** (Postgres) → crear y conectar al proyecto.
+   Vercel agrega `DATABASE_URL`. La tabla `app_pedidos` se crea sola con el primer pedido.
+4. **Variables de entorno** (Settings → Environment Variables):
+
+   | Variable | Valor |
+   | --- | --- |
+   | `APP_CLAVE` | Contraseña para entrar a la app (obligatoria en Vercel; sin ella la app queda bloqueada) |
+   | `CORREO_USUARIO` | `amiderosespana@gmail.com` |
+   | `CORREO_CLAVE` | Contraseña de aplicación de Google (16 letras) |
+   | `CORREO_NOMBRE` | `SPORT CHAMPION` |
+   | `CORREO_PIE` | `A tu servicio` |
+   | `CORREO_COPIA` | (opcional) copia oculta de cada aviso |
+   | `WHATSAPP_TOKEN`, `WHATSAPP_PHONE_ID` | (opcional) ver `WHATSAPP-PENDIENTE.md` |
+
+5. **Volver a desplegar** (Deployments → ⋯ → Redeploy) para que tome las variables.
+
+En Vercel no se leen los archivos `.bat`; esas claves van en las variables de entorno. Los archivos subidos
+pueden pesar hasta 4 MB (límite de Vercel). Para usar la misma base de datos desde el computador, pon
+`set DATABASE_URL=...` en `correo-config.bat`; si no, en el computador se sigue usando `data/pedidos.json`.
 
 ## Endpoints
 | Método y ruta | Qué hace |
 | --- | --- |
+| `GET/POST/DELETE /api/sesion` | Estado de la sesión, ingresar con `{"clave":"..."}`, salir. Con `APP_CLAVE` el resto de `/api` exige haber ingresado |
 | `POST /api/pedidos` | Crea un pedido. Solo el archivo en `archivo` es obligatorio: el cliente se toma del bloque del archivo, y los campos `organizacion`, `tipo`, `nit`, `contacto`, `email`, `whatsapp` del formulario completan o corrigen |
 | `GET /api/pedidos` | Lista de pedidos, los más recientes primero |
 | `GET /api/pedidos/:codigo` | Detalle de un pedido (con historial y avisos) |

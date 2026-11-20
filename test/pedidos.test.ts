@@ -14,7 +14,7 @@ beforeEach(() => {
   process.env.PSC_DATA = join(mkdtempSync(join(tmpdir(), "psc-")), "pedidos.json");
 });
 
-function nuevoPedido(filas: string[][]) {
+async function nuevoPedido(filas: string[][]) {
   const cliente = validarCliente(clienteOk);
   assert.equal(cliente.ok, true);
   if (!cliente.ok) throw new Error();
@@ -22,7 +22,7 @@ function nuevoPedido(filas: string[][]) {
   return crearPedido(cliente.cliente, "lista.xlsx", lectura, validarPedido(lectura));
 }
 
-test("normaliza el cliente: correo en minúsculas y WhatsApp con +57", () => {
+test("normaliza el cliente: correo en minúsculas y WhatsApp con +57", async () => {
   const r = validarCliente(clienteOk);
   assert.ok(r.ok);
   if (r.ok) {
@@ -31,33 +31,33 @@ test("normaliza el cliente: correo en minúsculas y WhatsApp con +57", () => {
   }
 });
 
-test("rechaza cliente sin organización, con correo malo o WhatsApp inválido", () => {
+test("rechaza cliente sin organización, con correo malo o WhatsApp inválido", async () => {
   const r = validarCliente({ ...clienteOk, organizacion: "", email: "ana@", whatsapp: "123" });
   assert.equal(r.ok, false);
   if (!r.ok) assert.deepEqual(Object.keys(r.errores).sort(), ["email", "organizacion", "whatsapp"]);
 });
 
-test("WhatsApp: vacío es válido, internacional se respeta", () => {
+test("WhatsApp: vacío es válido, internacional se respeta", async () => {
   assert.equal(normalizarWhatsapp(""), "");
   assert.equal(normalizarWhatsapp("+1 (305) 555-0100"), "+13055550100");
   assert.equal(normalizarWhatsapp("abc"), null);
 });
 
-test("crea pedidos con código consecutivo y estado según la validación", () => {
-  const a = nuevoPedido([["Juan", "10", "M"]]);
-  const b = nuevoPedido([["Pedro", "10", "XXXXL"]]);
+test("crea pedidos con código consecutivo y estado según la validación", async () => {
+  const a = await nuevoPedido([["Juan", "10", "M"]]);
+  const b = await nuevoPedido([["Pedro", "10", "XXXXL"]]);
   assert.match(a.codigo, /^PSC-\d{4}-00001$/);
   assert.match(b.codigo, /^PSC-\d{4}-00002$/);
   assert.equal(a.estado, "por_aprobar");
   assert.equal(b.estado, "borrador");
 });
 
-test("lista (recientes primero), consulta y elimina", () => {
-  const a = nuevoPedido([["Juan", "10", "M"]]);
-  const b = nuevoPedido([["Pedro", "11", "L"]]);
-  assert.deepEqual(listarPedidos().map((p) => p.codigo), [b.codigo, a.codigo]);
-  assert.equal(obtenerPedido(a.codigo)?.cliente.organizacion, "Colegio San José");
-  assert.equal(eliminarPedido(a.codigo), true);
-  assert.equal(eliminarPedido(a.codigo), false);
-  assert.equal(listarPedidos().length, 1);
+test("lista (recientes primero), consulta y elimina", async () => {
+  const a = await nuevoPedido([["Juan", "10", "M"]]);
+  const b = await nuevoPedido([["Pedro", "11", "L"]]);
+  assert.deepEqual((await listarPedidos()).map((p) => p.codigo), [b.codigo, a.codigo]);
+  assert.equal((await obtenerPedido(a.codigo))?.cliente.organizacion, "Colegio San José");
+  assert.equal(await eliminarPedido(a.codigo), true);
+  assert.equal(await eliminarPedido(a.codigo), false);
+  assert.equal((await listarPedidos()).length, 1);
 });

@@ -13,7 +13,7 @@ import { contenidoCorreo, enviarCorreo, modoCorreo } from "../src/correo.js";
 
 const base = { organizacion: "Colegio San José", tipo: "colegio", contacto: "Ana Ruiz", email: "ana@sj.co", whatsapp: "", aceptaWhatsapp: "no" };
 
-function nuevoPedido(extra: Record<string, unknown> = {}): Pedido {
+async function nuevoPedido(extra: Record<string, unknown> = {}): Promise<Pedido> {
   const c = validarCliente({ ...base, ...extra });
   if (!c.ok) throw new Error("cliente inválido en la prueba");
   const lectura = mapearTabla([["Nombre", "Número", "Talla"], ["Juan", "10", "M"], ["Luis", "7", "M"], ["Eva", "9", "S"]]);
@@ -64,15 +64,15 @@ async function conSmtp(aceptar: boolean, prueba: (recibidos: Recibido[]) => Prom
 
 test("sin credenciales el modo es simulación y no sale nada", async () => {
   assert.equal(modoCorreo(), "simulado");
-  const a = await enviarCorreo(nuevoPedido(), "en_produccion");
+  const a = await enviarCorreo(await nuevoPedido(), "en_produccion");
   assert.equal(a?.canal, "correo");
   assert.equal(a?.resultado, "simulado");
   assert.equal(a?.para, "ana@sj.co");
   assert.match(a!.texto, /Asunto: Pedido PSC-.* En producción \| SPORT CHAMPION/);
 });
 
-test("el correo de cada estado trae asunto, resumen y pie", () => {
-  const p = nuevoPedido();
+test("el correo de cada estado trae asunto, resumen y pie", async () => {
+  const p = await nuevoPedido();
   for (const e of ["por_aprobar", "en_produccion", "finalizado"] as const) {
     const c = contenidoCorreo(p, e)!;
     assert.ok(c.asunto.includes(p.codigo));
@@ -85,7 +85,7 @@ test("el correo de cada estado trae asunto, resumen y pie", () => {
 });
 
 test("sin correo del cliente se omite", async () => {
-  const p = nuevoPedido();
+  const p = await nuevoPedido();
   p.cliente.email = "";
   const a = await enviarCorreo(p, "en_produccion");
   assert.equal(a?.resultado, "omitido");
@@ -95,7 +95,7 @@ test("modo real: autentica, envía a la dirección del cliente con copia oculta"
   process.env.CORREO_COPIA = "amiderosespana@gmail.com";
   await conSmtp(true, async (recibidos) => {
     assert.equal(modoCorreo(), "real");
-    const p = nuevoPedido();
+    const p = await nuevoPedido();
     const a = await enviarCorreo(p, "en_produccion");
     assert.equal(a?.resultado, "enviado", a?.detalle);
     assert.equal(recibidos.length, 1);
@@ -116,20 +116,20 @@ test("modo real: autentica, envía a la dirección del cliente con copia oculta"
 
 test("sin CORREO_COPIA solo le llega al cliente", async () => {
   await conSmtp(true, async (recibidos) => {
-    await enviarCorreo(nuevoPedido(), "finalizado");
+    await enviarCorreo(await nuevoPedido(), "finalizado");
     assert.deepEqual(recibidos[0].destinatarios, ["ana@sj.co"]);
   });
 });
 
-test("el HTML escapa lo que escribe el cliente", () => {
-  const c = contenidoCorreo(nuevoPedido({ organizacion: "<script>alert(1)</script> & Cía" }), "por_aprobar")!;
+test("el HTML escapa lo que escribe el cliente", async () => {
+  const c = contenidoCorreo(await nuevoPedido({ organizacion: "<script>alert(1)</script> & Cía" }), "por_aprobar")!;
   assert.ok(!c.html.includes("<script>"));
   assert.match(c.html, /&lt;script&gt;/);
 });
 
 test("clave rechazada: queda 'fallido' con un mensaje claro y no lanza", async () => {
   await conSmtp(false, async () => {
-    const a = await enviarCorreo(nuevoPedido(), "en_produccion");
+    const a = await enviarCorreo(await nuevoPedido(), "en_produccion");
     assert.equal(a?.resultado, "fallido");
     assert.match(a!.detalle ?? "", /contraseña de aplicación/);
   });
@@ -140,7 +140,7 @@ test("sin conexión al servidor: 'fallido', no lanza", async () => {
   process.env.CORREO_CLAVE = "clave";
   process.env.CORREO_SERVIDOR = "127.0.0.1";
   process.env.CORREO_PUERTO = "1"; // nadie escucha
-  const a = await enviarCorreo(nuevoPedido(), "en_produccion");
+  const a = await enviarCorreo(await nuevoPedido(), "en_produccion");
   assert.equal(a?.resultado, "fallido");
 });
 
