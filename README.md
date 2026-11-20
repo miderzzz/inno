@@ -123,6 +123,8 @@ Los correos de los ejemplos usan el dominio reservado `example.com`, así que un
 | `src/correo.ts` | Correo de cada estado (texto y HTML) y envío por SMTP (real o simulado) |
 | `src/whatsapp.ts` | Textos de los avisos y envío por la API de WhatsApp (real o simulado) |
 | `public/index.html` | Pantalla: ingreso, nuevo pedido, lista y detalle |
+| `public/img/` | Logo de Champions Sport y banner de la pantalla de ingreso |
+| `src/pagina-empaquetada.ts` | Copia de `public/` dentro del código, para Vercel. **Se genera sola** con `npm test`, `npm run server` o `npm run empaquetar`: después de editar `public/`, ejecuta uno de ellos antes del commit |
 | `src/acceso.ts` | Contraseña de acceso (`APP_CLAVE`) y sesión con cookie firmada |
 | `src/cliente.ts` | Validación de los datos del cliente (organización, contacto, correo, WhatsApp) |
 | `src/almacen.ts` | Guarda los pedidos, su historial y los avisos: en PostgreSQL si existe `DATABASE_URL` (tabla `app_pedidos`, se crea sola) o en `data/pedidos.json` |

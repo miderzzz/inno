@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "validar": "tsx src/cli.ts",
-    "server": "tsx src/server.ts",
-    "dev": "tsx watch src/server.ts",
-    "test": "tsx --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "server": "tsx src/empaquetar-pagina.ts && tsx src/server.ts",
+    "dev": "tsx src/empaquetar-pagina.ts && tsx watch src/server.ts",
+    "test": "tsx src/empaquetar-pagina.ts && tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "empaquetar": "tsx src/empaquetar-pagina.ts"
   },
   "dependencies": {
     "exceljs": "^4.4.0",

@@ -33,6 +33,7 @@ import { validarPedido } from "./validador.js";
 import { enviarCorreo, modoCorreo } from "./correo.js";
 import { enviarAviso, modoWhatsapp } from "./whatsapp.js";
 import { cargarConfigLocal } from "./config-local.js";
+import { IMAGENES, PAGINA } from "./pagina-empaquetada.js";
 
 // En el computador lee correo-config.bat y whatsapp-config.bat. En Vercel las claves van en Environment Variables.
 const cargaLocal = process.env.VERCEL ? [] : cargarConfigLocal();
@@ -44,14 +45,15 @@ const subida = multer({
   fileFilter: (_req, file, cb) => cb(null, /\.(xlsx|csv)$/i.test(file.originalname)),
 });
 
-/** Carpeta public/ (página e imágenes). En Vercel la sirve directamente su CDN. */
+/**
+ * Página e imágenes. En el computador se leen de public/ (así un cambio se ve con solo recargar);
+ * en Vercel la carpeta public/ no llega a la función, así que se usa la copia empaquetada
+ * en src/pagina-empaquetada.ts (la genera npm run empaquetar).
+ */
 const DIR_PUBLICO = [join(process.cwd(), "public"), fileURLToPath(new URL("../public", import.meta.url))].find((d) =>
   existsSync(join(d, "index.html")),
 );
-function leerPagina(): string | null {
-  return DIR_PUBLICO ? readFileSync(join(DIR_PUBLICO, "index.html"), "utf8") : null;
-}
-let pagina: string | null = null;
+const leerPagina = (): string => (DIR_PUBLICO ? readFileSync(join(DIR_PUBLICO, "index.html"), "utf8") : PAGINA);
 const MSG_ARCHIVO = `Adjunta un archivo .xlsx o .csv de máximo ${MAX_MB} MB en el campo "archivo".`;
 
 /** Express 4 no atrapa errores de funciones async: esto los manda al manejador de errores. */
@@ -64,7 +66,21 @@ const asincrono =
 const app = express();
 app.set("trust proxy", true);
 app.use(express.json());
-if (DIR_PUBLICO) app.use("/img", express.static(join(DIR_PUBLICO, "img"), { maxAge: "1d" })); // logo e imágenes (en el computador)
+app.get("/img/:nombre", (req, res) => {
+  const nombre = String(req.params.nombre);
+  const enDisco = DIR_PUBLICO && !nombre.includes("..") ? join(DIR_PUBLICO, "img", nombre) : null;
+  if (enDisco && existsSync(enDisco)) {
+    res.sendFile(enDisco, { maxAge: "1d" });
+    return;
+  }
+  const img = IMAGENES[nombre];
+  if (!img) {
+    res.status(404).end();
+    return;
+  }
+  res.type(img.tipo).setHeader("Cache-Control", "public, max-age=86400");
+  res.send(Buffer.from(img.base64, "base64"));
+});
 
 /** Avisa por WhatsApp y por correo, deja ambos intentos registrados en el pedido y lo devuelve al día. */
 async function notificar(pedido: Pedido, estado: EstadoPedido): Promise<Pedido> {
@@ -74,9 +90,7 @@ async function notificar(pedido: Pedido, estado: EstadoPedido): Promise<Pedido> 
 }
 
 app.get(["/", "/index.html"], (_req, res) => {
-  pagina ??= leerPagina();
-  if (pagina) res.type("html").send(pagina);
-  else res.status(500).send("No se encontró public/index.html.");
+  res.type("html").setHeader("Cache-Control", "no-cache").send(leerPagina());
 });
 
 // ---- Acceso ----------------------------------------------------------------
